@@ -407,7 +407,7 @@
                     {/* GPU-Accelerated Spotlight using Translate instead of Background Repaint */}
                     {isDesktop && (
                         <motion.div
-                            className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full opacity-20 mix-blend-screen will-change-transform"
+                            className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full opacity-20 mix-blend-screen will-change-transform"
                             style={{ 
                                 x: springX, 
                                 y: springY, 
@@ -531,8 +531,8 @@
 
                                 <div className="flex flex-col md:flex-row justify-between md:items-end text-sm md:text-base font-medium uppercase tracking-widest border-t border-black/10 pt-6 gap-4">
                                     <div className="flex flex-col gap-1">
-                                        <span>Berlin, Germany</span>
-                                        <span>est. 2024</span>
+                                        <span>Germany & Europe</span>
+                                        <span>est. 2019</span>
                                     </div>
                                     <div className="flex gap-4 md:gap-8 flex-wrap">
                                         <a href={SOCIALS.instagram} onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.instagram, true); }} className="hover:underline">Instagram</a>
@@ -601,8 +601,8 @@
                                 transition={{ duration: 1, ease: [0.76, 0, 0.24, 1], delay: 0.5 }}
                                 className="text-white/90 text-sm md:text-2xl font-bold tracking-[0.15em] md:tracking-[0.2em] uppercase max-w-lg mx-auto text-center drop-shadow-md"
                             >
-                                Deutschlands härteste Partyreihe <br/> 
-                                <span className="text-accent block mt-2 md:inline md:mt-0">The New Wave of Nightlife</span>
+                                Germany's Biggest <br/> 
+                                <span className="text-accent block mt-2 md:inline md:mt-0">HipHop • Afro • Latin • Trap</span>
                             </motion.p>
                         </motion.div>
                     </div>
@@ -614,11 +614,16 @@
                         className="absolute bottom-8 md:bottom-12 w-full px-4 md:px-8 flex justify-between items-end text-white/70 text-[10px] md:text-xs uppercase tracking-[0.2em] z-20"
                     >
                         <div className="flex flex-col font-bold">
-                            <span>Berlin • Hamburg</span>
-                            <span>Köln • München</span>
+                            <span>Berlin • Hamburg • Köln</span>
+                            <span>München • Frankfurt • Wien</span>
                         </div>
-                        <div className="animate-bounce text-accent">Scrollen ↓</div>
-                        <span className="font-bold">Since 2024</span>
+                        
+                        {/* Centered Scroll Indicator */}
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-0 mb-1 flex flex-col items-center gap-2">
+                            <div className="animate-bounce text-accent">Scrollen ↓</div>
+                        </div>
+
+                        <span className="font-bold">EST. 2019</span>
                     </motion.div>
                 </section>
             );
@@ -638,7 +643,7 @@
                             <div key={i} className="flex items-center gap-8 md:gap-12 text-black font-black text-5xl md:text-8xl tracking-tighter uppercase">
                                 <span>Pullup Events</span>
                                 <Disc className="w-8 h-8 md:w-20 md:h-20 animate-spin-slow" />
-                                <span>No Sleep</span>
+                                <span>Community First</span>
                                 <Zap className="w-8 h-8 md:w-20 md:h-20 fill-current" />
                             </div>
                         ))}
@@ -822,32 +827,32 @@
                     <div className="container mx-auto px-4 md:px-8 grid md:grid-cols-2 gap-12 md:gap-16 items-center">
                         <div className="order-2 md:order-1">
                             <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter mb-8 leading-[0.9]">
-                                Wir sind nicht nur <br/> eine <span className="text-accent">Party.</span>
+                                Newcomer <br/> meets <span className="text-accent">Icon.</span>
                             </h2>
                             <div className="space-y-6 text-base md:text-lg text-white/70">
                                 <p>
-                                    PULLUP wurde aus der Notwendigkeit heraus geboren, die deutsche Clubkultur neu zu definieren. Wir hatten genug von denselben alten Playlists und steifen Crowds.
+                                    PULLUP hat sich als wachstumsstarkes Eventformat in Münster und NRW etabliert. Unser Konzept ist einzigartig: Ein progressiver Wettbewerb, der Newcomern die Bühne direkt neben etablierten Headlinern bietet.
                                 </p>
                                 <p>
-                                    Unser Ziel ist einfach: Wir schaffen Räume, in denen du dich verlieren kannst. HipHop, Afrobeat, Trap und Future Sounds – kuratiert von den besten DJs Europas.
+                                    Deine Stimme zählt: Über Community-Votings entscheiden wir, wer den Spot auf der großen Bühne bekommt. Wir vereinen HipHop, Afro und Latin mit authentischer Jugendkultur und regionaler Förderung.
                                 </p>
                                 <p className="font-bold text-white text-lg md:text-xl">
-                                    Keine Fotos. Keine VIP-Tische. Nur Energie.
+                                    Community • Voting • Turnup
                                 </p>
                             </div>
                             
                             <div className="mt-12 flex gap-8 md:gap-12 border-t border-white/10 pt-8 overflow-x-auto pb-4 md:pb-0">
                                 <div className="flex flex-col shrink-0">
-                                    <span className="text-4xl md:text-5xl font-black text-[#ccff00]">50+</span>
-                                    <span className="text-xs md:text-sm uppercase tracking-widest text-white/50 mt-2">Events</span>
+                                    <span className="text-4xl md:text-5xl font-black text-accent">100k+</span>
+                                    <span className="text-xs md:text-sm uppercase tracking-widest text-white/50 mt-2">Reichweite</span>
                                 </div>
                                 <div className="flex flex-col shrink-0">
-                                    <span className="text-4xl md:text-5xl font-black text-[#ccff00]">20k</span>
-                                    <span className="text-xs md:text-sm uppercase tracking-widest text-white/50 mt-2">Besucher</span>
+                                    <span className="text-4xl md:text-5xl font-black text-accent">1k+</span>
+                                    <span className="text-xs md:text-sm uppercase tracking-widest text-white/50 mt-2">Gäste / Night</span>
                                 </div>
                                 <div className="flex flex-col shrink-0">
-                                    <span className="text-4xl md:text-5xl font-black text-[#ccff00]">100%</span>
-                                    <span className="text-xs md:text-sm uppercase tracking-widest text-white/50 mt-2">Vibe</span>
+                                    <span className="text-4xl md:text-5xl font-black text-accent">100%</span>
+                                    <span className="text-xs md:text-sm uppercase tracking-widest text-white/50 mt-2">Energy</span>
                                 </div>
                             </div>
                         </div>
@@ -862,9 +867,7 @@
                              alt="Crowd energy"
                            />
                            <div className="absolute bottom-8 left-8 z-20">
-                                 <div className="bg-[#ccff00] text-black px-4 py-1 text-sm font-bold inline-block mb-4">
-                                     PULLUP DOCUMENTARY
-                                 </div>
+                                 <div className="bg-accent text-black px-4 py-1 text-sm font-bold inline-block mb-4">PULLUP MOVIE</div>
                                  <h3 className="text-2xl md:text-3xl font-bold uppercase">The Movement Begins</h3>
                            </div>
                         </div>
@@ -945,7 +948,7 @@
                             </h2>
                             <div className="flex flex-col md:flex-row justify-between items-center md:items-end mt-8 border-t border-black/20 pt-8 text-xs md:text-sm uppercase font-bold tracking-widest gap-2 md:gap-0">
                                 <span>© 2025 PULLUP ORG.</span>
-                                <span>Made for the Culture.</span>
+                                <span>EST. 2019</span>
                             </div>
                         </div>
                     </div>
