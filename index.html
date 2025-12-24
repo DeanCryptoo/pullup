@@ -141,7 +141,8 @@
                 lineup: "AJ TRACEY • OG KEEMO • SOULECTION",
                 image: "2.jpg",
                 status: "TICKETS",
-                scarcity: "normal" 
+                scarcity: "normal",
+                onLocationOnly: true // tickets only available at the door
             },
             {
                 id: 3,
@@ -162,10 +163,12 @@
                 isoDate: "2025-12-31T23:59:00",
                 lineup: "NYE SPECIAL • TRAVIS SCOTT (LIVE)",
                 image: "4.jpg",
-                status: "BALD VERFÜGBAR",
+                status: "TICKETS",
                 scarcity: "soon",
+                onLocationOnly: true, // tickets only available at the door
                 isSecret: false,
                 hasCountdown: true
+
             }
         ];
 
@@ -661,9 +664,16 @@
             const eventDate = new Date(event.isoDate);
             const now = new Date();
             const isPast = eventDate < now;
+            const isLocationOnly = event.onLocationOnly;
             
-            // If past, force status to SOLD OUT and disable countdown
-            const displayStatus = isPast ? "SOLD OUT" : event.status;
+            // If past, force status to SOLD OUT. If Location Only, show ABENDKASSE
+            let displayStatus = event.status;
+            if (isPast) {
+                displayStatus = "SOLD OUT";
+            } else if (isLocationOnly) {
+                displayStatus = "ABENDKASSE";
+            }
+
             const showCountdown = event.hasCountdown && !isPast;
 
             const cardBackground = useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, rgba(255,255,255, 0.05), transparent 40%)`;
@@ -699,6 +709,10 @@
                  }
             }
 
+            // Determine styles based on state
+            const isClickable = !isPast && !isLocationOnly && displayStatus !== 'AUSVERKAUFT';
+            const isSoldOut = isPast || displayStatus === 'AUSVERKAUFT';
+
             return (
                 <motion.div 
                     initial={{ opacity: 0, y: 50 }}
@@ -711,13 +725,13 @@
 
                     <div className="container mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 z-10 relative">
                         <div className="flex items-start gap-6 md:gap-8 md:w-1/3">
-                            <span className={`text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br font-sans tracking-tighter shrink-0 transition-colors duration-500 ${isPast ? 'from-white/20 to-white/10' : 'from-[var(--color-accent)] to-white'}`}>
+                            <span className={`text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br font-sans tracking-tighter shrink-0 transition-colors duration-500 ${isSoldOut ? 'from-white/20 to-white/10' : 'from-[var(--color-accent)] to-white'}`}>
                                 {event.date}
                             </span>
                             <div className="flex flex-col justify-center pt-1 md:pt-0">
-                                <span className={`text-lg md:text-2xl font-bold uppercase tracking-tight leading-none mb-1 ${isPast ? 'text-white/40' : 'text-white'}`}>{event.city}</span>
+                                <span className={`text-lg md:text-2xl font-bold uppercase tracking-tight leading-none mb-1 ${isSoldOut ? 'text-white/40' : 'text-white'}`}>{event.city}</span>
                                 <span className="text-white/50 uppercase tracking-widest text-xs md:text-sm">{event.venue}</span>
-                                {event.scarcity === 'low' && !isPast && (
+                                {event.scarcity === 'low' && !isPast && !isLocationOnly && (
                                     <span className="mt-2 text-xs font-bold text-red-500 animate-pulse flex items-center gap-1"><AlertCircle className="w-3 h-3"/> LOW STOCK</span>
                                 )}
                             </div>
@@ -729,7 +743,7 @@
                                     <span className="text-white font-black text-xl font-mono">{event.secretReveal}</span>
                                 </ScratchCard>
                             ) : (
-                                <p className={`font-medium text-base md:text-xl font-mono leading-tight transition-colors break-words ${isPast ? 'text-white/40' : 'text-white group-hover:text-accent'}`}>
+                                <p className={`font-medium text-base md:text-xl font-mono leading-tight transition-colors break-words ${isSoldOut ? 'text-white/40' : 'text-white group-hover:text-accent'}`}>
                                     {event.lineup}
                                 </p>
                             )}
@@ -738,21 +752,22 @@
 
                         <div className="w-full md:w-1/4 flex justify-start md:justify-end mt-2 md:mt-0">
                             <a 
-                                href={isPast ? undefined : SOCIALS.linktree} 
+                                href={isClickable ? SOCIALS.linktree : undefined} 
                                 onClick={(e) => { 
                                     e.preventDefault(); 
-                                    if(!isPast) onLinkClick(SOCIALS.linktree, true); 
+                                    if(isClickable) onLinkClick(SOCIALS.linktree, true); 
                                 }}
                                 className={`
                                 px-6 md:px-8 py-3 md:py-4 rounded-full uppercase font-bold tracking-wider text-xs md:text-sm transition-all duration-300 flex items-center gap-2
-                                ${isPast 
+                                ${isSoldOut 
                                     ? 'bg-transparent text-white/20 border border-white/10 cursor-not-allowed' 
-                                    : event.status === 'AUSVERKAUFT'
-                                        ? 'bg-transparent text-white/30 border border-white/20 cursor-not-allowed'
+                                    : isLocationOnly
+                                        ? 'bg-transparent text-white border border-white/50 cursor-default hover:border-white'
                                         : 'bg-white text-black group-hover:bg-accent group-hover:scale-105 group-hover:pr-6 cursor-pointer'}
                             `}>
                                 {displayStatus}
-                                {!isPast && displayStatus !== 'AUSVERKAUFT' && <ArrowUpRight className="w-4 h-4" />}
+                                {isClickable && <ArrowUpRight className="w-4 h-4" />}
+                                {isLocationOnly && !isPast && <MapPin className="w-4 h-4" />}
                             </a>
                         </div>
                     </div>
@@ -760,7 +775,7 @@
                     {/* Liquid Distortion Image - Only show for future or active events if desired, or keep for all */}
                     <motion.div
                         className="hidden md:block absolute top-1/2 left-1/2 w-[300px] h-[400px] rounded-sm z-0 pointer-events-none opacity-0 group-hover:opacity-40 transition-all duration-500"
-                        style={{ translateX: "-50%", translateY: "-50%", rotate: "6deg", filter: isPast ? 'grayscale(100%)' : 'none' }}
+                        style={{ translateX: "-50%", translateY: "-50%", rotate: "6deg", filter: isSoldOut ? 'grayscale(100%)' : 'none' }}
                         onMouseEnter={handleImageHover}
                         onMouseLeave={handleImageLeave}
                     >
