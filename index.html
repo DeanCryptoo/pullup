@@ -84,6 +84,7 @@
             transform: translateZ(0);
             backface-visibility: hidden;
             perspective: 1000px;
+            will-change: transform;
         }
     </style>
 </head>
@@ -189,7 +190,7 @@
 
             return (
                 <motion.div
-                    className="fixed top-0 left-0 w-6 h-6 rounded-full pointer-events-none z-[9999] mix-blend-difference"
+                    className="fixed top-0 left-0 w-6 h-6 rounded-full pointer-events-none z-[9999] mix-blend-difference will-change-transform"
                     style={{
                         x: smoothX,
                         y: smoothY,
@@ -201,7 +202,7 @@
             );
         };
 
-        // 2. Decrypted Text Effect (Moved Up to avoid ReferenceError)
+        // 2. Decrypted Text Effect
         const DecryptedText = ({ text, className, revealDelay = 0, animateOnHover = false }) => {
             const [displayText, setDisplayText] = useState(text);
             const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*";
@@ -250,7 +251,7 @@
             );
         };
 
-        // 3. Magnetic Button (Moved Up)
+        // 3. Magnetic Button
         const MagneticButton = ({ children, className, onClick }) => {
             const ref = useRef(null);
             const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -284,7 +285,7 @@
             );
         };
 
-        // 4. Countdown Component (Moved Up)
+        // 4. Countdown Component
         const Countdown = ({ targetDate }) => {
             const [time, setTime] = useState("00:00:00:00");
             
@@ -378,19 +379,16 @@
             );
         };
 
-        // 7. Global Dynamic Noise & Spotlight
+        // 7. Global Dynamic Noise & Spotlight (OPTIMIZED for Performance)
         const GlobalBackground = () => {
              const mouseX = useMotionValue(0);
              const mouseY = useMotionValue(0);
              const [isDesktop, setIsDesktop] = useState(false);
 
-             const spotlightBackground = useMotionTemplate`
-                radial-gradient(
-                    800px circle at ${mouseX}px ${mouseY}px,
-                    rgba(204, 255, 0, 0.15),
-                    transparent 40%
-                )
-            `;
+             // Use springs for smoother, less frequent updates to the transform
+             // Adjusted physics: Higher stiffness = faster follow, Lower damping = less lag
+             const springX = useSpring(mouseX, { stiffness: 300, damping: 25 });
+             const springY = useSpring(mouseY, { stiffness: 300, damping: 25 });
 
              useEffect(() => {
                 if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
@@ -406,12 +404,20 @@
 
              return (
                  <div className="fixed inset-0 z-0 pointer-events-none">
+                    {/* GPU-Accelerated Spotlight using Translate instead of Background Repaint */}
                     {isDesktop && (
                         <motion.div
-                            className="absolute inset-0 opacity-20 mix-blend-screen"
-                            style={{ background: spotlightBackground }}
+                            className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full opacity-20 mix-blend-screen will-change-transform"
+                            style={{ 
+                                x: springX, 
+                                y: springY, 
+                                translateX: "-50%", 
+                                translateY: "-50%",
+                                background: 'radial-gradient(circle, var(--color-accent) 0%, rgba(0,0,0,0) 70%)'
+                            }}
                         />
                     )}
+                    {/* OPTIMIZED NOISE TEXTURE (No SVG Filter) */}
                     <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay"
                          style={{
                              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
@@ -568,8 +574,7 @@
                         />
                     </motion.div>
 
-                     {/* Content is wrapped in App's skew, but we need independent movement here too */}
-                     {/* Optimized Glow: Radial Gradient instead of Blur Filter */}
+                     {/* Optimized Glow */}
                     <div 
                         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] md:w-[30vw] md:h-[30vw] opacity-10 animate-pulse pointer-events-none" 
                         style={{
@@ -579,7 +584,6 @@
 
                     <div className="z-10 text-center flex flex-col items-center w-full px-4">
                         <motion.div style={{ y: y1 }} className="w-full flex justify-center will-change-transform">
-                            {/* Replaced Text with Logo Image for "Something like this" effect */}
                             <motion.img 
                                 src="logo.png" 
                                 alt="PULLUP" 
@@ -791,8 +795,8 @@
                     <div className="container mx-auto px-4 mb-12 md:mb-20">
                         <div className="flex items-start gap-4 mb-4">
                              <div className="w-3 h-3 md:w-4 md:h-4 bg-accent rounded-full mt-2 md:mt-4 animate-pulse shrink-0"></div>
-                             <h2 className="text-white text-[12vw] md:text-[6vw] font-black leading-none uppercase tracking-tighter">
-                                <DecryptedText text="Kommende" /> <span className="text-stroke-white text-transparent">Nächte</span>
+                             <h2 className="text-white text-[12vw] md:text-[6vw] font-black leading-[0.9] uppercase tracking-tighter">
+                                <DecryptedText text="Kommende" /> <br className="md:hidden" /> <span className="text-stroke-white text-transparent">Nächte</span>
                             </h2>
                         </div>
                         
@@ -963,8 +967,11 @@
             const [isDesktop, setIsDesktop] = useState(false);
 
             useEffect(() => {
-                // Only run liquid effects on desktop
-                if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+                // Only run liquid effects on desktop if user has not requested reduced motion
+                const hasFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+                const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                
+                if (hasFinePointer && !prefersReducedMotion) {
                     setIsDesktop(true);
                 }
             }, []);
