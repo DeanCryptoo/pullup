@@ -6,16 +6,14 @@
     <title>PULLUP | The New Wave of Nightlife</title>
     <link rel="icon" type="image/png" href="logo.png">
     
-    <!-- Tailwind CSS (Styling) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Babel (Allows React code to run in browser) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Custom CSS for specific effects -->
     <style>
         :root {
-            --color-accent: #ccff00; 
+            /* HIER WURDE DIE FARBE GEÄNDERT auf #d6d01f */
+            --color-accent: #d6d01f; 
             --color-black: #050505;
         }
 
@@ -90,7 +88,6 @@
 </head>
 <body class="bg-black text-white font-sans selection-accent overflow-x-hidden w-full">
     
-    <!-- SVG Filters for Liquid Distortion -->
     <svg style="position: absolute; width: 0; height: 0;">
         <defs>
             <filter id="liquid-distort">
@@ -100,10 +97,8 @@
         </defs>
     </svg>
 
-    <!-- React Root -->
     <div id="root"></div>
 
-    <!-- React Application Script -->
     <script type="text/babel" data-type="module">
         // Import Dependencies from Cloud (ESM)
         import React, { useState, useEffect, useRef, useCallback } from 'https://esm.sh/react@18.2.0?dev';
@@ -384,16 +379,16 @@
 
         // 7. Global Dynamic Noise & Spotlight (OPTIMIZED for Performance)
         const GlobalBackground = () => {
-             const mouseX = useMotionValue(0);
-             const mouseY = useMotionValue(0);
-             const [isDesktop, setIsDesktop] = useState(false);
+            const mouseX = useMotionValue(0);
+            const mouseY = useMotionValue(0);
+            const [isDesktop, setIsDesktop] = useState(false);
 
-             // Use springs for smoother, less frequent updates to the transform
-             // Adjusted physics: Higher stiffness = faster follow, Lower damping = less lag
-             const springX = useSpring(mouseX, { stiffness: 300, damping: 25 });
-             const springY = useSpring(mouseY, { stiffness: 300, damping: 25 });
+            // Use springs for smoother, less frequent updates to the transform
+            // Adjusted physics: Higher stiffness = faster follow, Lower damping = less lag
+            const springX = useSpring(mouseX, { stiffness: 300, damping: 25 });
+            const springY = useSpring(mouseY, { stiffness: 300, damping: 25 });
 
-             useEffect(() => {
+            useEffect(() => {
                 if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
                     setIsDesktop(true);
                     const handleMouseMove = (e) => {
@@ -403,10 +398,10 @@
                     window.addEventListener('mousemove', handleMouseMove);
                     return () => window.removeEventListener('mousemove', handleMouseMove);
                 }
-             }, []);
+            }, []);
 
-             return (
-                 <div className="fixed inset-0 z-0 pointer-events-none">
+            return (
+                <div className="fixed inset-0 z-0 pointer-events-none">
                     {/* GPU-Accelerated Spotlight using Translate instead of Background Repaint */}
                     {isDesktop && (
                         <motion.div
@@ -422,13 +417,13 @@
                     )}
                     {/* OPTIMIZED NOISE TEXTURE (No SVG Filter) */}
                     <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay"
-                         style={{
-                             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-                             backgroundRepeat: 'repeat',
-                         }}
+                        style={{
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+                            backgroundRepeat: 'repeat',
+                        }}
                     />
-                 </div>
-             );
+                </div>
+            );
         };
 
         // 8. Preloader
@@ -452,7 +447,7 @@
                         transition={{ duration: 1, ease: "easeOut" }}
                         className="flex flex-col items-center"
                     >
-                         <img 
+                        <img 
                             src="logo.png" 
                             alt="PULLUP Logo" 
                             className="w-48 md:w-64 object-contain mb-4"
@@ -561,7 +556,7 @@
 
             return (
                 <section className="relative h-screen w-full flex flex-col justify-center items-center perspective-1000 overflow-hidden">
-                     {/* Dynamic Background Image Layer - Optimized */}
+                    {/* Dynamic Background Image Layer - Optimized */}
                     <motion.div 
                         style={{ opacity }}
                         className="absolute inset-0 w-full h-full z-0 will-change-transform"
@@ -577,11 +572,11 @@
                         />
                     </motion.div>
 
-                     {/* Optimized Glow */}
+                    {/* Optimized Glow - Updated to use correct variable but kept inline style for safety */}
                     <div 
                         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] md:w-[30vw] md:h-[30vw] opacity-10 animate-pulse pointer-events-none" 
                         style={{
-                            background: 'radial-gradient(circle, rgba(204,255,0,1) 0%, rgba(204,255,0,0) 70%)'
+                            background: 'radial-gradient(circle, var(--color-accent) 0%, rgba(214,208,31,0) 70%)'
                         }}
                     />
 
@@ -590,7 +585,7 @@
                             <motion.img 
                                 src="logo.png" 
                                 alt="PULLUP" 
-                                className="w-[40%] md:w-[25%] h-auto max-w-2xl object-contain drop-shadow-[0_0_15px_rgba(204,255,0,0.3)]"
+                                className="w-[40%] md:w-[25%] h-auto max-w-2xl object-contain drop-shadow-[0_0_15px_rgba(214,208,31,0.3)]"
                                 initial={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
                                 animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                                 transition={{ duration: 1.5, ease: "easeOut" }}
@@ -605,7 +600,8 @@
                                 className="text-white/90 text-sm md:text-2xl font-bold tracking-[0.15em] md:tracking-[0.2em] uppercase max-w-lg mx-auto text-center drop-shadow-md"
                             >
                                 Germany's Biggest <br/> 
-                                <span className="text-accent block mt-2 md:inline md:mt-0">HipHop • Afro • Latin • Trap</span>
+                                {/* HIER IST DIE AUSNAHME: text-accent entfernt und inline style mit altem Grün hinzugefügt */}
+                                <span className="block mt-2 md:inline md:mt-0" style={{ color: '#ccff00' }}>HipHop • Afro • Latin • Trap</span>
                             </motion.p>
                         </motion.div>
                     </div>
@@ -633,8 +629,8 @@
         };
 
         const Marquee = () => {
-             const { scrollYProgress } = useScroll();
-             const x = useTransform(scrollYProgress, [0, 1], [0, -1000]); 
+            const { scrollYProgress } = useScroll();
+            const x = useTransform(scrollYProgress, [0, 1], [0, -1000]); 
              
             return (
                 <div className="w-full py-8 md:py-12 bg-accent overflow-hidden whitespace-nowrap rotate-1 scale-105 border-y-4 border-black z-20 relative">
