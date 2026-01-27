@@ -709,8 +709,8 @@
             const isSoldOut = isPast || displayStatus === 'AUSVERKAUFT';
 
             // --- MAP URL UPDATED ---
-            // Adresse fest auf Geisbergweg 8, 48143 Münster gesetzt
-            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Geisbergweg 8, 48143 Münster")}`;
+            // Adresse fest auf Fyal Central, Geisbergweg 8, 48143 Münster gesetzt
+            const mapUrl = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent("Fyal Central, Geisbergweg 8, 48143 Münster");
 
             return (
                 <motion.div 
