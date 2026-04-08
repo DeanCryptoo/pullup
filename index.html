@@ -142,7 +142,14 @@
                 lineup: "DJ EZ • SKEPTA • PULLUP SOUNDSYSTEM",
                 image: "1.jpg", 
                 status: "TICKETS",
-                scarcity: "available"
+                scarcity: "available",
+                // HIER SIND DIE NEUEN KÜNSTLERDATEN FÜR DAS KARUSSELL
+                artists: [
+                    { name: "DJ EZ", image: "1.jpg" }, // Wir nutzen die vorhandenen Bilder als Platzhalter
+                    { name: "SKEPTA", image: "2.jpg" },
+                    { name: "PULLUP SOUNDS.", image: "3.jpg" },
+                    { name: "SURPRISE GUEST", image: "4.jpg" } // Ein 4. Künstler für einen besseren Looping-Effekt
+                ]
             },
             {
                 id: 2,
@@ -154,7 +161,12 @@
                 image: "2.jpg",
                 status: "TICKETS",
                 scarcity: "normal",
-                onLocationOnly: true 
+                onLocationOnly: true ,
+                artists: [
+                    { name: "AJ TRACEY", image: "2.jpg" },
+                    { name: "OG KEEMO", image: "3.jpg" },
+                    { name: "SOULECTION", image: "4.jpg" }
+                ]
             },
             {
                 id: 3,
@@ -165,7 +177,12 @@
                 lineup: "METRO BOOMIN • LUCIANO • PULLUP RESIDENTS",
                 image: "3.jpg",
                 status: "TICKETS",
-                scarcity: "available"
+                scarcity: "available",
+                artists: [
+                    { name: "METRO BOOMIN", image: "3.jpg" },
+                    { name: "LUCIANO", image: "4.jpg" },
+                    { name: "PULLUP RESID.", image: "1.jpg" }
+                ]
             },
             {
                 id: 4,
@@ -179,7 +196,12 @@
                 scarcity: "soon",
                 onLocationOnly: true, 
                 isSecret: false,
-                hasCountdown: true
+                hasCountdown: true,
+                artists: [
+                    { name: "TRAVIS SCOTT", image: "4.jpg" },
+                    { name: "SPECIAL NYE", image: "1.jpg" },
+                    { name: "PULLUP PIT", image: "2.jpg" }
+                ]
             }
         ];
 
@@ -433,8 +455,75 @@
         };
 
         /* ------------------------------------------------------------------------------------------------ */
-        /* --- KINETIC ACCORDION (LINE-UP)                                                              --- */
+        /* --- KINETIC ACCORDION (LINE-UP) MIT RIESENRAD-KARUSSELL (DIE UMSETZUNG)                      --- */
         /* ------------------------------------------------------------------------------------------------ */
+
+        // Das neue Künstler-Karussell-Komponente (subtil im Hintergrund)
+        const ArtistCarousel = ({ artists, className }) => {
+            const [index, setIndex] = useState(0);
+
+            // Automatische Rotation (ständige Bewegung)
+            useEffect(() => {
+                const timer = setInterval(() => {
+                    setIndex((prevIndex) => (prevIndex + 1) % artists.length);
+                }, 3000); // 3 Sekunden pro Künstler
+                return () => clearInterval(timer);
+            }, [artists.length]);
+
+            // Indizes: prev, current, next
+            const prevIndex = (index - 1 + artists.length) % artists.length;
+            const nextIndex = (index + 1) % artists.length;
+
+            // Definition der "Slots" für das Riesenrad (perspektivischer Bogen)
+            const getSlotProps = (slotIndex) => {
+                switch (slotIndex) {
+                    case 0: // LEFT (von unten kommend)
+                        return { x: "-20vw", y: "5vh", scale: 0.6, opacity: 0.3, zIndex: 5, filter: "blur(4px)" };
+                    case 1: // CENTER (Aktiv/Groß/Mitte)
+                        return { x: "0vw", y: "0vh", scale: 1, opacity: 0.9, zIndex: 10, filter: "blur(0px)" };
+                    case 2: // RIGHT (nach hinten/oben verschwindend)
+                        return { x: "20vw", y: "5vh", scale: 0.6, opacity: 0.3, zIndex: 5, filter: "blur(4px)" };
+                    default:
+                        return {};
+                }
+            };
+
+            return (
+                <div className={`absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none z-0 ${className}`}>
+                    {artists.map((artist, artistIdx) => {
+                        let position = -1; // Standard: nicht sichtbar
+                        if (artistIdx === index) position = 1; // Mitte
+                        else if (artistIdx === prevIndex) position = 0; // Links
+                        else if (artistIdx === nextIndex) position = 2; // Rechts
+
+                        const props = position !== -1 
+                            ? getSlotProps(position) 
+                            : { x: position === 0 ? "-30vw" : "30vw", y: "10vh", scale: 0.5, opacity: 0, zIndex: 0 };
+
+                        return (
+                            <motion.div
+                                key={artistIdx}
+                                className="absolute w-[25vw] md:w-[20vw] aspect-[4/5] rounded-xl overflow-hidden border border-white/10 shadow-2xl"
+                                initial={false} // Verhindert Animation beim ersten Laden
+                                animate={props}
+                                transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                                style={{ transformOrigin: "bottom center" }} // Wichtig für die Perspektive
+                            >
+                                <img src={artist.image} className="w-full h-full object-cover grayscale opacity-90" alt={artist.name} />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                                {/* Optionaler Künstler-Name (sehr subtil) */}
+                                {position === 1 && (
+                                    <div className="absolute bottom-4 left-4 right-4 text-center">
+                                        <p className="text-white text-xs md:text-sm font-bold uppercase tracking-widest">{artist.name}</p>
+                                    </div>
+                                )}
+                            </motion.div>
+                        );
+                    })}
+                </div>
+            );
+        };
+
         const Events = ({ onLinkClick }) => {
             const [activeEvent, setActiveEvent] = useState(EVENTS[0].id);
 
@@ -488,7 +577,7 @@
                                             className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-100 grayscale-0 opacity-80' : 'scale-150 grayscale opacity-30'}`} 
                                             alt={event.city} 
                                         />
-                                        <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/90 via-black/40 to-transparent' : 'bg-black/60'}`}></div>
+                                        <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/95 via-black/50 to-transparent' : 'bg-black/60'}`}></div>
                                     </div>
 
                                     <AnimatePresence>
@@ -498,31 +587,37 @@
                                                 animate={{ opacity: 1, y: 0 }} 
                                                 exit={{ opacity: 0, y: 20 }}
                                                 transition={{ duration: 0.3, delay: 0.2 }}
-                                                className="absolute inset-0 p-6 md:p-12 flex flex-col justify-between z-10"
+                                                className="absolute inset-0 p-6 md:p-12 z-10"
                                             >
-                                                <div className="flex justify-between items-start">
-                                                    <span className="text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 tracking-tighter drop-shadow-2xl">
-                                                        {event.date}
-                                                    </span>
-                                                    {event.scarcity === 'low' && !isPast && !isLocationOnly && (
-                                                        <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase animate-pulse">Low Stock</span>
-                                                    )}
-                                                </div>
+                                                {/* NEU: Das Riesenrad-Künstler-Karussell subtil im Hintergrund */}
+                                                <ArtistCarousel artists={event.artists} className="top-1/4" />
 
-                                                <div className="flex flex-col md:flex-row justify-between items-end gap-6">
-                                                    <div className="flex flex-col">
-                                                        <h3 className="text-3xl md:text-6xl font-black uppercase text-white tracking-tighter mb-2">{event.city}</h3>
-                                                        <span className="text-accent uppercase tracking-widest text-sm md:text-base font-bold mb-4">{event.venue}</span>
-                                                        <p className="font-mono text-sm md:text-lg text-white/80 max-w-lg">{event.lineup}</p>
+                                                {/* Bestehende Infos (Text-Ebene ist z-20, um vor dem Karussell zu liegen) */}
+                                                <div className="relative z-20 flex flex-col justify-between h-full pointer-events-auto">
+                                                    <div className="flex justify-between items-start">
+                                                        <span className="text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 tracking-tighter drop-shadow-2xl">
+                                                            {event.date}
+                                                        </span>
+                                                        {event.scarcity === 'low' && !isPast && !isLocationOnly && (
+                                                            <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase animate-pulse">Low Stock</span>
+                                                        )}
                                                     </div>
-                                                    
-                                                    <div className="flex items-center gap-3 w-full md:w-auto">
-                                                        <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 hover:border-white hover:bg-white hover:text-black transition-all duration-300">
-                                                            <MapPin className="w-5 h-5" />
-                                                        </a>
-                                                        <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`flex-1 md:flex-none px-6 md:px-10 py-3 md:py-4 rounded-full uppercase font-black tracking-widest text-xs md:text-sm transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-transparent text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
-                                                            {displayStatus}
-                                                        </a>
+
+                                                    <div className="flex flex-col md:flex-row justify-between items-end gap-6">
+                                                        <div className="flex flex-col">
+                                                            <h3 className="text-3xl md:text-6xl font-black uppercase text-white tracking-tighter mb-2 drop-shadow-lg">{event.city}</h3>
+                                                            <span className="text-accent uppercase tracking-widest text-sm md:text-base font-bold mb-4 drop-shadow-md">{event.venue}</span>
+                                                            <p className="font-mono text-sm md:text-lg text-white/80 max-w-lg bg-black/40 backdrop-blur-sm p-2 rounded-lg border border-white/10">{event.lineup}</p>
+                                                        </div>
+                                                        
+                                                        <div className="flex items-center gap-3 w-full md:w-auto">
+                                                            <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
+                                                                <MapPin className="w-5 h-5" />
+                                                            </a>
+                                                            <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`flex-1 md:flex-none px-6 md:px-10 py-3 md:py-4 rounded-full uppercase font-black tracking-widest text-xs md:text-sm transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-transparent text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
+                                                                {displayStatus}
+                                                            </a>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </motion.div>
@@ -543,7 +638,7 @@
         };
         /* ------------------------------------------------------------------------------------------------ */
 
-        /* 1. INFOS: "THE MELTING TYPE" (Mobile SVG Fix ist drinne) */
+        /* 1. INFOS: "THE MELTING TYPE" (Mobile SVG Fix) */
         const Infos = () => {
             const { scrollY } = useScroll();
             const scrollVelocity = useVelocity(scrollY);
@@ -593,6 +688,7 @@
                 <section id="aktuelles" ref={targetRef} className="relative h-[200vh] bg-[#050505] z-20 border-y border-white/5">
                     <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden perspective-container">
                         
+                        {/* THE REVEALED BACKGROUND: B-SIDE INFO */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-accent text-black p-4 z-0">
                             <span className="font-mono font-bold tracking-widest uppercase mb-4 animate-pulse border border-black px-4 py-1">+++ SYSTEM OVERRIDE +++</span>
                             <h2 className="text-[15vw] md:text-[10vw] font-black uppercase tracking-tighter leading-[0.85] text-center mb-12 text-black mix-blend-overlay">
@@ -603,6 +699,7 @@
                             </MagneticButton>
                         </div>
 
+                        {/* THE FOREGROUND: SHATTERING PULLUP LOGO IN 5 SLICES */}
                         <div className="absolute inset-0 z-10 flex w-full h-full pointer-events-none">
                             {[...Array(5)].map((_, i) => {
                                 const ySign = i % 2 === 0 ? -1 : 1;
@@ -618,6 +715,7 @@
                                         className="h-full relative overflow-hidden preserve-3d"
                                         style={{ width: '20%', y: moveY, z: moveZ, rotateX: rotX, rotateY: rotY, opacity: opacity }}
                                     >
+                                        {/* The full screen logo centered inside the slice via negative left offset */}
                                         <div className="absolute top-0 h-full w-[100vw] bg-black flex items-center justify-center border-r border-white/5" style={{ left: `-${i * 20}vw` }}>
                                             <img src="logo.png" className="w-[80vw] md:w-[40vw] max-w-2xl object-contain opacity-90 drop-shadow-[0_0_20px_rgba(214,208,31,0.2)]" alt="PULLUP Split" />
                                         </div>
@@ -693,7 +791,7 @@
                                 <div key={i} className="relative w-[300px] h-[350px] md:w-[400px] md:h-[500px] shrink-0 overflow-hidden rounded-md group cursor-none">
                                     <div className="absolute inset-0 bg-accent mix-blend-multiply opacity-0 group-hover:opacity-60 transition-opacity duration-300 z-10" />
                                     <img src={src} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110" />
-                                </div>
+                                }</div>
                             ))}
                         </motion.div>
                     </div>
