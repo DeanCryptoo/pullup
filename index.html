@@ -860,21 +860,19 @@
             return (
                 <section id="merch" ref={targetRef} className="pt-16 pb-32 md:pt-32 md:pb-48 relative z-20 px-4 bg-black flex justify-center overflow-visible perspective-container">
                     
-                    {/* DAS KNÖLLCHEN-UNFOLDING */}
+                    {/* DAS ECHTE KNÖLLCHEN-UNFOLDING */}
                     <motion.div 
-                        initial={{ scale: 0, rotateX: 160, rotateY: 120, rotateZ: -180, skewX: 40, skewY: 40, opacity: 0 }}
+                        initial={{ scaleX: 0, scaleY: 0, rotateZ: -180, borderRadius: "50%", opacity: 0 }}
                         animate={isInView ? { 
-                            scale: [0, 0.6, 1.05, 1], 
-                            rotateX: [160, -30, 10, 0], 
-                            rotateY: [120, 40, -10, 0], 
-                            rotateZ: [-180, 20, -5, -2], 
-                            skewX: [40, -15, 5, -2], 
-                            skewY: [40, -15, 5, 0],
-                            opacity: [0, 1, 1, 1] 
+                            scaleX: [0, 0.15, 0.25, 1.05, 1], 
+                            scaleY: [0, 0.1, 1.05, 1.02, 1], 
+                            rotateZ: [-180, -90, -20, 2, -2], 
+                            borderRadius: ["50%", "40%", "10%", "2%", "0%"],
+                            opacity: [0, 1, 1, 1, 1] 
                         } : { 
-                            scale: 0, rotateX: 160, rotateY: 120, rotateZ: -180, skewX: 40, skewY: 40, opacity: 0 
+                            scaleX: 0, scaleY: 0, rotateZ: -180, borderRadius: "50%", opacity: 0 
                         }}
-                        transition={{ duration: 1.0, ease: [0.25, 1, 0.3, 1], times: [0, 0.5, 0.8, 1] }}
+                        transition={{ duration: 1.2, ease: "easeOut", times: [0, 0.15, 0.45, 0.8, 1] }}
                         className="w-full max-w-2xl text-black relative z-10 receipt-crumpled gpu-accelerated"
                         style={{ transformOrigin: "center center" }}
                     >
