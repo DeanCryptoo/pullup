@@ -103,7 +103,7 @@
             height: 32px;
         }
 
-        /* Utility für vertikalen Text im Line-Up Accordion */
+        /* Utility für vertikalen Text im Line-Up Accordion (nur Desktop) */
         .writing-vertical {
             writing-mode: vertical-rl;
             text-orientation: mixed;
@@ -143,12 +143,11 @@
                 image: "1.jpg", 
                 status: "TICKETS",
                 scarcity: "available",
-                // HIER SIND DIE NEUEN KÜNSTLERDATEN FÜR DAS KARUSSELL
                 artists: [
-                    { name: "DJ EZ", image: "1.jpg" }, // Wir nutzen die vorhandenen Bilder als Platzhalter
+                    { name: "DJ EZ", image: "1.jpg" }, 
                     { name: "SKEPTA", image: "2.jpg" },
                     { name: "PULLUP SOUNDS.", image: "3.jpg" },
-                    { name: "SURPRISE GUEST", image: "4.jpg" } // Ein 4. Künstler für einen besseren Looping-Effekt
+                    { name: "SURPRISE GUEST", image: "4.jpg" }
                 ]
             },
             {
@@ -161,7 +160,7 @@
                 image: "2.jpg",
                 status: "TICKETS",
                 scarcity: "normal",
-                onLocationOnly: true ,
+                onLocationOnly: true,
                 artists: [
                     { name: "AJ TRACEY", image: "2.jpg" },
                     { name: "OG KEEMO", image: "3.jpg" },
@@ -455,34 +454,32 @@
         };
 
         /* ------------------------------------------------------------------------------------------------ */
-        /* --- KINETIC ACCORDION (LINE-UP) MIT RIESENRAD-KARUSSELL (DIE UMSETZUNG)                      --- */
+        /* --- KINETIC ACCORDION (LINE-UP) MIT RIESENRAD-KARUSSELL                                      --- */
         /* ------------------------------------------------------------------------------------------------ */
 
         // Das neue Künstler-Karussell-Komponente (subtil im Hintergrund)
         const ArtistCarousel = ({ artists, className }) => {
             const [index, setIndex] = useState(0);
 
-            // Automatische Rotation (ständige Bewegung)
             useEffect(() => {
                 const timer = setInterval(() => {
                     setIndex((prevIndex) => (prevIndex + 1) % artists.length);
-                }, 3000); // 3 Sekunden pro Künstler
+                }, 3000); 
                 return () => clearInterval(timer);
             }, [artists.length]);
 
-            // Indizes: prev, current, next
             const prevIndex = (index - 1 + artists.length) % artists.length;
             const nextIndex = (index + 1) % artists.length;
 
-            // Definition der "Slots" für das Riesenrad (perspektivischer Bogen)
             const getSlotProps = (slotIndex) => {
+                // 100K FIX: Größere Bilder im Hintergrund, weniger Blur, damit man das Riesenrad klar erkennt
                 switch (slotIndex) {
-                    case 0: // LEFT (von unten kommend)
-                        return { x: "-20vw", y: "5vh", scale: 0.6, opacity: 0.3, zIndex: 5, filter: "blur(4px)" };
-                    case 1: // CENTER (Aktiv/Groß/Mitte)
-                        return { x: "0vw", y: "0vh", scale: 1, opacity: 0.9, zIndex: 10, filter: "blur(0px)" };
-                    case 2: // RIGHT (nach hinten/oben verschwindend)
-                        return { x: "20vw", y: "5vh", scale: 0.6, opacity: 0.3, zIndex: 5, filter: "blur(4px)" };
+                    case 0: // LEFT
+                        return { x: "-20vw", y: "4vh", scale: 0.75, opacity: 0.5, zIndex: 5, filter: "blur(2px)" };
+                    case 1: // CENTER
+                        return { x: "0vw", y: "0vh", scale: 1, opacity: 0.8, zIndex: 10, filter: "blur(0px)" };
+                    case 2: // RIGHT
+                        return { x: "20vw", y: "4vh", scale: 0.75, opacity: 0.5, zIndex: 5, filter: "blur(2px)" };
                     default:
                         return {};
                 }
@@ -491,27 +488,26 @@
             return (
                 <div className={`absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none z-0 ${className}`}>
                     {artists.map((artist, artistIdx) => {
-                        let position = -1; // Standard: nicht sichtbar
-                        if (artistIdx === index) position = 1; // Mitte
-                        else if (artistIdx === prevIndex) position = 0; // Links
-                        else if (artistIdx === nextIndex) position = 2; // Rechts
+                        let position = -1; 
+                        if (artistIdx === index) position = 1; 
+                        else if (artistIdx === prevIndex) position = 0; 
+                        else if (artistIdx === nextIndex) position = 2; 
 
                         const props = position !== -1 
                             ? getSlotProps(position) 
-                            : { x: position === 0 ? "-30vw" : "30vw", y: "10vh", scale: 0.5, opacity: 0, zIndex: 0 };
+                            : { x: position === 0 ? "-35vw" : "35vw", y: "10vh", scale: 0.5, opacity: 0, zIndex: 0 };
 
                         return (
                             <motion.div
                                 key={artistIdx}
-                                className="absolute w-[25vw] md:w-[20vw] aspect-[4/5] rounded-xl overflow-hidden border border-white/10 shadow-2xl"
-                                initial={false} // Verhindert Animation beim ersten Laden
+                                className="absolute w-[40vw] md:w-[22vw] aspect-[4/5] rounded-xl overflow-hidden border border-white/10 shadow-2xl"
+                                initial={false} 
                                 animate={props}
-                                transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                                style={{ transformOrigin: "bottom center" }} // Wichtig für die Perspektive
+                                transition={{ type: "spring", stiffness: 90, damping: 20 }}
+                                style={{ transformOrigin: "bottom center" }} 
                             >
                                 <img src={artist.image} className="w-full h-full object-cover grayscale opacity-90" alt={artist.name} />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-                                {/* Optionaler Künstler-Name (sehr subtil) */}
                                 {position === 1 && (
                                     <div className="absolute bottom-4 left-4 right-4 text-center">
                                         <p className="text-white text-xs md:text-sm font-bold uppercase tracking-widest">{artist.name}</p>
@@ -526,6 +522,14 @@
 
         const Events = ({ onLinkClick }) => {
             const [activeEvent, setActiveEvent] = useState(EVENTS[0].id);
+            const [isMobile, setIsMobile] = useState(false);
+
+            useEffect(() => {
+                const checkMobile = () => setIsMobile(window.innerWidth < 768);
+                checkMobile();
+                window.addEventListener('resize', checkMobile);
+                return () => window.removeEventListener('resize', checkMobile);
+            }, []);
 
             const sortedEvents = [...EVENTS].sort((a, b) => {
                 const dateA = new Date(a.isoDate);
@@ -537,7 +541,7 @@
             });
 
             return (
-                <section id="events" className="bg-transparent pt-20 md:pt-32 pb-0 relative z-10">
+                <section id="events" className="bg-transparent pt-20 md:pt-32 pb-10 relative z-10">
                     <div className="container mx-auto px-4 mb-8 md:mb-12">
                         <div className="flex items-start gap-4 mb-4">
                              <div className="w-3 h-3 md:w-4 md:h-4 bg-accent rounded-full mt-2 md:mt-4 animate-pulse shrink-0"></div>
@@ -547,7 +551,8 @@
                         </div>
                     </div>
 
-                    <div className="w-full h-[60vh] md:h-[70vh] flex flex-row px-2 md:px-4 gap-1 md:gap-2">
+                    {/* 100K MOBILE FIX: Container ändert sich von flex-row (Desktop) zu flex-col (Mobile) */}
+                    <div className="w-full h-[75vh] md:h-[70vh] flex flex-col md:flex-row px-2 md:px-4 gap-2 md:gap-2">
                         {sortedEvents.map((event) => {
                             const isActive = activeEvent === event.id;
                             
@@ -563,18 +568,22 @@
                             const isClickable = !isPast && !isLocationOnly && displayStatus !== 'AUSVERKAUFT';
                             const mapUrl = "https://share.google/95gzX5b2O3N3pxq73"; 
 
+                            // Breiten/Höhen-Logik basierend auf Gerät
+                            const activeClass = isMobile ? 'w-full h-[70%]' : 'w-[80%] h-full';
+                            const inactiveClass = isMobile ? 'w-full h-[10%]' : 'w-[6%] h-full';
+
                             return (
                                 <motion.div 
                                     key={event.id}
                                     layout
-                                    onMouseEnter={() => setActiveEvent(event.id)}
-                                    onClick={() => setActiveEvent(event.id)}
-                                    className={`relative h-full rounded-2xl overflow-hidden cursor-none flex-shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive ? 'w-[70%] md:w-[80%]' : 'w-[10%] md:w-[6%]'}`}
+                                    onMouseEnter={() => !isMobile && setActiveEvent(event.id)}
+                                    onClick={() => isMobile && setActiveEvent(event.id)}
+                                    className={`relative rounded-2xl overflow-hidden cursor-none flex-shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive ? activeClass : inactiveClass}`}
                                 >
-                                    <div className="absolute inset-0 z-0">
+                                    <div className="absolute inset-0 z-0 bg-black">
                                         <img 
                                             src={event.image} 
-                                            className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-100 grayscale-0 opacity-80' : 'scale-150 grayscale opacity-30'}`} 
+                                            className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-100 grayscale-0 opacity-40' : 'scale-150 grayscale opacity-20'}`} 
                                             alt={event.city} 
                                         />
                                         <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/95 via-black/50 to-transparent' : 'bg-black/60'}`}></div>
@@ -587,12 +596,12 @@
                                                 animate={{ opacity: 1, y: 0 }} 
                                                 exit={{ opacity: 0, y: 20 }}
                                                 transition={{ duration: 0.3, delay: 0.2 }}
-                                                className="absolute inset-0 p-6 md:p-12 z-10"
+                                                className="absolute inset-0 p-6 md:p-12 z-10 overflow-hidden"
                                             >
-                                                {/* NEU: Das Riesenrad-Künstler-Karussell subtil im Hintergrund */}
-                                                <ArtistCarousel artists={event.artists} className="top-1/4" />
+                                                {/* Das Riesenrad-Künstler-Karussell (Position angepasst für Mobile) */}
+                                                <ArtistCarousel artists={event.artists} className="top-[15%] md:top-1/4" />
 
-                                                {/* Bestehende Infos (Text-Ebene ist z-20, um vor dem Karussell zu liegen) */}
+                                                {/* Text und Buttons */}
                                                 <div className="relative z-20 flex flex-col justify-between h-full pointer-events-auto">
                                                     <div className="flex justify-between items-start">
                                                         <span className="text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 tracking-tighter drop-shadow-2xl">
@@ -624,8 +633,16 @@
                                         )}
                                     </AnimatePresence>
 
-                                    <div className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
-                                        <span className="writing-vertical text-xl md:text-3xl font-black uppercase tracking-widest text-white/50 whitespace-nowrap">
+                                    {/* Desktop Inaktiver Text (Vertikal) */}
+                                    <div className={`hidden md:flex absolute inset-0 items-center justify-center pointer-events-none transition-opacity duration-300 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
+                                        <span className="writing-vertical text-3xl font-black uppercase tracking-widest text-white/50 whitespace-nowrap">
+                                            {event.city}
+                                        </span>
+                                    </div>
+
+                                    {/* Mobile Inaktiver Text (Horizontal & Zentriert) */}
+                                    <div className={`md:hidden absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
+                                        <span className="text-xl font-black uppercase tracking-widest text-white/70 whitespace-nowrap">
                                             {event.city}
                                         </span>
                                     </div>
@@ -638,12 +655,13 @@
         };
         /* ------------------------------------------------------------------------------------------------ */
 
-        /* 1. INFOS: "THE MELTING TYPE" (Mobile SVG Fix) */
+        /* 1. INFOS: "THE MELTING TYPE" */
         const Infos = () => {
             const { scrollY } = useScroll();
             const scrollVelocity = useVelocity(scrollY);
             const smoothVelocity = useSpring(scrollVelocity, { damping: 50, stiffness: 400 });
 
+            // 100K BUGFIX: AnimationFrame läuft jetzt global und filtert den Container, nicht das leere SVG
             useAnimationFrame(() => {
                 const vel = Math.abs(smoothVelocity.get());
                 const mappedScale = Math.min(vel * 0.05, 150); 
@@ -688,7 +706,6 @@
                 <section id="aktuelles" ref={targetRef} className="relative h-[200vh] bg-[#050505] z-20 border-y border-white/5">
                     <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden perspective-container">
                         
-                        {/* THE REVEALED BACKGROUND: B-SIDE INFO */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-accent text-black p-4 z-0">
                             <span className="font-mono font-bold tracking-widest uppercase mb-4 animate-pulse border border-black px-4 py-1">+++ SYSTEM OVERRIDE +++</span>
                             <h2 className="text-[15vw] md:text-[10vw] font-black uppercase tracking-tighter leading-[0.85] text-center mb-12 text-black mix-blend-overlay">
@@ -699,7 +716,6 @@
                             </MagneticButton>
                         </div>
 
-                        {/* THE FOREGROUND: SHATTERING PULLUP LOGO IN 5 SLICES */}
                         <div className="absolute inset-0 z-10 flex w-full h-full pointer-events-none">
                             {[...Array(5)].map((_, i) => {
                                 const ySign = i % 2 === 0 ? -1 : 1;
@@ -715,7 +731,6 @@
                                         className="h-full relative overflow-hidden preserve-3d"
                                         style={{ width: '20%', y: moveY, z: moveZ, rotateX: rotX, rotateY: rotY, opacity: opacity }}
                                     >
-                                        {/* The full screen logo centered inside the slice via negative left offset */}
                                         <div className="absolute top-0 h-full w-[100vw] bg-black flex items-center justify-center border-r border-white/5" style={{ left: `-${i * 20}vw` }}>
                                             <img src="logo.png" className="w-[80vw] md:w-[40vw] max-w-2xl object-contain opacity-90 drop-shadow-[0_0_20px_rgba(214,208,31,0.2)]" alt="PULLUP Split" />
                                         </div>
@@ -791,7 +806,7 @@
                                 <div key={i} className="relative w-[300px] h-[350px] md:w-[400px] md:h-[500px] shrink-0 overflow-hidden rounded-md group cursor-none">
                                     <div className="absolute inset-0 bg-accent mix-blend-multiply opacity-0 group-hover:opacity-60 transition-opacity duration-300 z-10" />
                                     <img src={src} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110" />
-                                }</div>
+                                </div>
                             ))}
                         </motion.div>
                     </div>
