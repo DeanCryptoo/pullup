@@ -25,7 +25,7 @@
             background-color: var(--color-black);
             margin: 0;
             padding: 0;
-            overflow-x: clip; /* 100k Bugfix: Keine horizontalen Swipes auf Mobile */
+            overflow-x: clip; 
             width: 100%;
             max-width: 100vw;
             -webkit-font-smoothing: antialiased;
@@ -70,7 +70,7 @@
             -webkit-text-stroke: 2px rgba(255,255,255,0.15);
         }
 
-        /* 3D Klassen für den Monolith-Shatter Effekt */
+        /* 3D Klassen für den Logo-Shatter Effekt */
         .preserve-3d {
             transform-style: preserve-3d;
         }
@@ -554,14 +554,27 @@
         };
 
         /* ------------------------------------------------------------------------------------------------ */
-        /* --- 100K MIX: INFOS (LIQUID) + AKTUELLES (MONOLITH) + STORY (HORIZONTAL REEL)                --- */
+        /* --- 100K MIX: INFOS (LIQUID) + AKTUELLES (LOGO SHATTER) + STORY (HORIZONTAL REEL)            --- */
         /* ------------------------------------------------------------------------------------------------ */
 
-        /* 1. INFOS: "THE MELTING TYPE" (Aus Konzept 1) */
+        /* 1. INFOS: "THE MELTING TYPE" (Mobile SVG Fix) */
         const Infos = () => {
+            const { scrollY } = useScroll();
+            const scrollVelocity = useVelocity(scrollY);
+            const smoothVelocity = useSpring(scrollVelocity, { damping: 50, stiffness: 400 });
+
+            // Dieser Frame feuert immer (auch auf Mobile), um den Filter dynamisch zu halten!
+            useAnimationFrame(() => {
+                const vel = Math.abs(smoothVelocity.get());
+                const mappedScale = Math.min(vel * 0.05, 150); 
+                const el = document.getElementById("displacement-map-infos");
+                if (el) {
+                    el.setAttribute("scale", mappedScale > 2 ? mappedScale : 0);
+                }
+            });
+
             return (
                 <section id="infos" className="relative py-32 md:py-64 bg-black z-10 overflow-hidden border-t border-white/10">
-                    {/* HIER WIRKT DER SVG DISPLACEMENT FILTER (angesteuert in LiquidScrollWrapper) */}
                     <div className="container mx-auto px-4 flex flex-col items-center justify-center min-h-[40vh]">
                         <div style={{ filter: 'url(#liquid-distort-infos)' }} className="text-center will-change-transform" id="infos-text-container">
                             <h2 className="text-[12vw] md:text-[8vw] font-black uppercase tracking-tighter leading-[0.85] text-white">
@@ -575,7 +588,6 @@
                             Scroll schnell, um die Energie zu spüren.
                         </p>
                     </div>
-                    {/* SVG Filter speziell für diese Sektion, um globale Bugs zu vermeiden */}
                     <svg style={{ position: 'absolute', width: 0, height: 0 }}>
                         <filter id="liquid-distort-infos">
                             <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" result="noise" />
@@ -586,7 +598,7 @@
             );
         };
 
-        /* 2. AKTUELLES: "THE SHATTERING MONOLITH" (Aus Konzept 2) */
+        /* 2. AKTUELLES: "THE SHATTERING PULLUP LOGO" */
         const News = ({ onLinkClick }) => {
             const targetRef = useRef(null);
             const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start 60%", "center center"] });
@@ -596,6 +608,7 @@
                 <section id="aktuelles" ref={targetRef} className="relative h-[200vh] bg-[#050505] z-20">
                     <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden perspective-container">
                         
+                        {/* THE REVEALED BACKGROUND: B-SIDE INFO */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-accent text-black p-4 z-0">
                             <span className="font-mono font-bold tracking-widest uppercase mb-4 animate-pulse border border-black px-4 py-1">+++ SYSTEM OVERRIDE +++</span>
                             <h2 className="text-[15vw] md:text-[10vw] font-black uppercase tracking-tighter leading-[0.85] text-center mb-12 text-black mix-blend-overlay">
@@ -606,7 +619,8 @@
                             </MagneticButton>
                         </div>
 
-                        <div className="absolute inset-0 z-10 flex w-full h-full preserve-3d pointer-events-none">
+                        {/* THE FOREGROUND: SHATTERING PULLUP LOGO IN 5 SLICES */}
+                        <div className="absolute inset-0 z-10 flex w-full h-full pointer-events-none">
                             {[...Array(5)].map((_, i) => {
                                 const ySign = i % 2 === 0 ? -1 : 1;
                                 const moveY = useTransform(breakProgress, [0, 1], [0, ySign * (300 + i * 100)]);
@@ -618,45 +632,38 @@
                                 return (
                                     <motion.div 
                                         key={i}
-                                        className="h-full bg-black border-r border-white/5 border-l relative"
-                                        style={{ width: '20%', transformStyle: 'preserve-3d', y: moveY, z: moveZ, rotateX: rotX, rotateY: rotY, opacity: opacity }}
+                                        className="h-full relative overflow-hidden preserve-3d"
+                                        style={{ width: '20%', y: moveY, z: moveZ, rotateX: rotX, rotateY: rotY, opacity: opacity }}
                                     >
-                                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/5 to-transparent opacity-50"></div>
+                                        <div className="absolute top-0 h-full w-[100vw] bg-black flex items-center justify-center border-r border-white/5" style={{ left: `-${i * 20}vw` }}>
+                                            <img src="logo.png" className="w-[80vw] md:w-[40vw] max-w-2xl object-contain opacity-90 drop-shadow-[0_0_20px_rgba(214,208,31,0.2)]" alt="PULLUP Split" />
+                                        </div>
                                     </motion.div>
                                 );
                             })}
                         </div>
                         
-                        <motion.div style={{ opacity: useTransform(breakProgress, [0, 0.2], [1, 0]) }} className="absolute z-20 pointer-events-none flex flex-col items-center">
-                            <div className="w-4 h-4 bg-accent rounded-full mb-4 animate-pulse"></div>
-                            <span className="text-white/30 font-mono text-xl md:text-3xl tracking-[0.5em] uppercase">LOCKED_</span>
-                        </motion.div>
                     </div>
                 </section>
             );
         };
 
-        /* 3. STORY: "THE HORIZONTAL REEL" (Komplett Neu - 100k Editorial Feel) */
+        /* 3. STORY: "THE HORIZONTAL REEL" */
         const Story = () => {
             const targetRef = useRef(null);
-            // ScrollProgress trackt, wie weit wir in den 300vh Container reingescrollt sind.
             const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
-            // x übersetzt den vertikalen Scroll in horizontale Bewegung (-66.66% für 3 Panels a 100vw).
             const x = useTransform(scrollYProgress, [0, 1], ["0%", "-66.666%"]);
 
             return (
                 <section id="story" ref={targetRef} className="relative h-[300vh] bg-black z-10 border-t border-white/10">
                     <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center bg-[#050505]">
                         
-                        {/* Static Background Typography */}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
                             <h2 className="text-[30vw] font-black uppercase tracking-tighter select-none">ENERGY</h2>
                         </div>
                         
-                        {/* The Moving Track */}
                         <motion.div style={{ x }} className="flex w-[300vw] h-full items-center will-change-transform">
                             
-                            {/* Panel 1: Left Aligned */}
                             <div className="w-[100vw] h-full flex flex-col justify-center px-10 md:px-24 relative z-10">
                                 <h3 className="text-accent text-xs md:text-sm tracking-widest font-mono mb-4 uppercase">Kapitel 01</h3>
                                 <h2 className="text-5xl md:text-[6vw] font-black uppercase mb-8 leading-[0.85] tracking-tighter">Mehr als<br/>eine Party.</h2>
@@ -665,7 +672,6 @@
                                 </div>
                             </div>
 
-                            {/* Panel 2: Right Aligned */}
                             <div className="w-[100vw] h-full flex flex-col justify-center px-10 md:px-24 items-end text-right relative z-10">
                                 <h3 className="text-accent text-xs md:text-sm tracking-widest font-mono mb-4 uppercase">Kapitel 02</h3>
                                 <h2 className="text-5xl md:text-[6vw] font-black uppercase mb-8 leading-[0.85] tracking-tighter">Kultur<br/>gestalten.</h2>
@@ -674,7 +680,6 @@
                                 </div>
                             </div>
 
-                            {/* Panel 3: Center Finale */}
                             <div className="w-[100vw] h-full flex items-center justify-center relative z-10">
                                 <div className="absolute inset-0">
                                     <img src="5.jpg" className="w-full h-full object-cover mix-blend-luminosity opacity-40" alt="Story 3" />
@@ -813,17 +818,6 @@
                 if (hasFinePointer && !prefersReducedMotion) setIsDesktop(true);
             }, []);
 
-            // WICHTIG: Hier wird das Melting-SVG gezielt für den Info-Bereich angesteuert
-            useAnimationFrame(() => {
-                if (!isDesktop) return;
-                const vel = Math.abs(smoothVelocity.get());
-                const mappedScale = Math.min(vel * 0.05, 150); 
-                const el = document.getElementById("displacement-map-infos");
-                if (el) {
-                    el.setAttribute("scale", mappedScale > 2 ? mappedScale : 0);
-                }
-            });
-
             if (!isDesktop) return <>{children}</>;
 
             return (
@@ -871,17 +865,16 @@
                             <GlobalBackground />
                             <Header onLinkClick={handleLinkClick} />
                             
-                            <LiquidScrollWrapper>
-                                <Hero />
-                                <Marquee />
-                                <Events onLinkClick={handleLinkClick} />
-                                <Infos />
-                                <News onLinkClick={handleLinkClick} />
-                                <Story />
-                                <GalleryTicker />
-                                <Merch onLinkClick={handleLinkClick} />
-                                <Footer onLinkClick={handleLinkClick} />
-                            </LiquidScrollWrapper>
+                            {/* KEINE LiquidScrollWrapper HIER MEHR - VERHINDERT MOBILE BUGS UND KONFLIKTE */}
+                            <Hero />
+                            <Marquee />
+                            <Events onLinkClick={handleLinkClick} />
+                            <Infos />
+                            <News onLinkClick={handleLinkClick} />
+                            <Story />
+                            <GalleryTicker />
+                            <Merch onLinkClick={handleLinkClick} />
+                            <Footer onLinkClick={handleLinkClick} />
                         </motion.div>
                     )}
                 </main>
