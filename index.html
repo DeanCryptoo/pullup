@@ -69,12 +69,6 @@
             color: transparent;
             -webkit-text-stroke: 2px rgba(255,255,255,0.15);
         }
-        
-        /* Neuer Outline Effekt für das Editorial Line-Up */
-        .hover-outline-transparent {
-            color: transparent;
-            -webkit-text-stroke: 2px var(--color-accent);
-        }
 
         .preserve-3d {
             transform-style: preserve-3d;
@@ -253,6 +247,27 @@
             );
         };
 
+        const Countdown = ({ targetDate }) => {
+            const [time, setTime] = useState("00:00:00:00");
+            useEffect(() => {
+                const target = new Date(targetDate).getTime();
+                const updateTimer = () => {
+                    const now = new Date().getTime();
+                    const diff = target - now;
+                    if (diff <= 0) return setTime("LIVE NOW");
+                    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((diff % (1000 * 60)) / 1000);
+                    setTime(`${d}d ${h}h ${m}m ${s}s`);
+                };
+                updateTimer();
+                const interval = setInterval(updateTimer, 1000);
+                return () => clearInterval(interval);
+            }, [targetDate]);
+            return <span className="font-mono text-accent text-sm md:text-base font-bold tracking-widest">{time}</span>;
+        };
+
         const GlitchTransition = ({ isActive }) => {
             if (!isActive) return null;
             return (
@@ -411,90 +426,104 @@
         };
 
         /* ------------------------------------------------------------------------------------------------ */
-        /* --- 100K EDITORIAL ROSTER (CONCEPT 2) FÜR DAS LINE-UP                                        --- */
+        /* --- 100K EVENT SECTION: "THE 3D STACK"                                                       --- */
         /* ------------------------------------------------------------------------------------------------ */
-        const EventRow = ({ event, onHover, isHovered, onLinkClick }) => {
-            const isPast = new Date(event.isoDate) < new Date();
-            const status = isPast ? "SOLD OUT" : (event.onLocationOnly ? "ABENDKASSE" : event.status);
-            const isClickable = !isPast && !event.onLocationOnly && status !== 'AUSVERKAUFT';
-            const mapUrl = "https://share.google/95gzX5b2O3N3pxq73";
+        
+        const StackedEventCard = ({ event, index, total, scrollYProgress, onLinkClick }) => {
+            // Berechne die Timings für diese Karte
+            const step = 1 / total;
+            const start = index * step;
+            const end = (index + 1) * step;
+
+            const enterStart = start - step;
+            const enterEnd = start;
             
+            // Karte verlässt den Screen ab der Hälfte ihrer "Aktiv-Zeit"
+            const exitStart = start + step * 0.6; 
+            const exitEnd = end;
+
+            // Framer Motion Transforms
+            // Y-Verschiebung: Fliegt nach oben weg
+            const y = useTransform(scrollYProgress, [exitStart, exitEnd], ["0vh", "-150vh"]);
+            
+            // Skalierung: Kommt aus dem Hintergrund (0.85) nach vorne (1)
+            const scale = useTransform(scrollYProgress, [enterStart, enterEnd, exitStart, exitEnd], [0.85, 1, 1, 0.95]);
+            
+            // Opacity: Fade in, Hold, Fade out
+            const opacity = useTransform(scrollYProgress, [enterStart, enterEnd, exitEnd, exitEnd + 0.1], [0.3, 1, 1, 0]);
+            
+            // Rotation: Leichter Spin beim Wegfliegen (abwechselnd links/rechts)
+            const rotateZ = useTransform(scrollYProgress, [exitStart, exitEnd], [0, index % 2 === 0 ? -8 : 8]);
+
+            // Exception für die erste Karte: Ist von Anfang an da
+            const finalScale = index === 0 ? useTransform(scrollYProgress, [exitStart, exitEnd], [1, 0.95]) : scale;
+            const finalOpacity = index === 0 ? useTransform(scrollYProgress, [exitEnd, exitEnd + 0.1], [1, 0]) : opacity;
+
+            const eventDate = new Date(event.isoDate);
+            const now = new Date();
+            const isPast = eventDate < now;
+            
+            let displayStatus = event.status;
+            if (isPast) displayStatus = "SOLD OUT";
+            else if (event.onLocationOnly) displayStatus = "ABENDKASSE";
+
+            const isClickable = !isPast && !event.onLocationOnly && displayStatus !== 'AUSVERKAUFT';
+            const mapUrl = "https://share.google/95gzX5b2O3N3pxq73";
+
             return (
-                <div 
-                    className="w-full border-b border-white/10 group cursor-none relative overflow-hidden"
-                    onMouseEnter={() => onHover(event)}
-                    onClick={(e) => {
-                        if(isClickable) {
-                            e.preventDefault();
-                            onLinkClick(SOCIALS.linktree, true);
-                        }
+                <motion.div
+                    style={{ 
+                        position: 'absolute',
+                        top: 0, left: 0, right: 0, bottom: 0,
+                        zIndex: 10 - index,
+                        y, scale: finalScale, opacity: finalOpacity, rotateZ 
                     }}
+                    className="w-full h-full rounded-[2rem] overflow-hidden bg-[#111] shadow-[0_30px_60px_rgba(0,0,0,0.8)] border border-white/10 will-change-transform flex flex-col cursor-none"
                 >
-                    {/* Mobile Background Image Fallback */}
-                    <div className="absolute inset-0 z-0 md:hidden opacity-20 transition-opacity duration-500">
-                        <img src={event.image} className="w-full h-full object-cover grayscale" alt={event.city} />
-                        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/40" />
+                    {/* Background Image */}
+                    <div className="absolute inset-0 z-0">
+                        <img src={event.image} className="w-full h-full object-cover transition-transform duration-[10s] hover:scale-110" alt={event.city} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
                     </div>
 
-                    <div className="container mx-auto px-4 py-10 md:py-16 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10 transition-all duration-500 ease-out group-hover:px-8">
-                        {/* LEFT: Date & City */}
-                        <div className="flex items-baseline gap-4 md:gap-12 w-full md:w-1/2">
-                            <span className={`text-2xl md:text-5xl font-black tracking-tighter ${isPast ? 'text-white/20' : 'text-white/40 group-hover:text-accent'} transition-colors duration-300`}>
+                    {/* Content */}
+                    <div className="relative z-10 flex flex-col justify-between h-full p-6 md:p-12">
+                        <div className="flex justify-between items-start">
+                            <h3 className="text-5xl md:text-8xl font-black text-white tracking-tighter drop-shadow-2xl">
                                 {event.date}
-                            </span>
-                            <div className="flex flex-col">
-                                <h3 className={`text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter transition-all duration-300 ${isPast ? 'text-white/20' : 'text-white group-hover:hover-outline-transparent'}`}>
-                                    {event.city}
-                                </h3>
-                                <span className={`text-xs md:text-sm font-bold uppercase tracking-widest mt-1 ${isPast ? 'text-white/10' : 'text-white/50 group-hover:text-white'}`}>
-                                    {event.venue}
-                                </span>
-                            </div>
+                            </h3>
+                            {event.scarcity === 'low' && !isPast && !event.onLocationOnly && (
+                                <span className="bg-red-600 text-white px-4 py-2 rounded-full text-xs font-bold uppercase animate-pulse shadow-lg">Low Stock</span>
+                            )}
                         </div>
-                        
-                        {/* RIGHT: Lineup & Status */}
-                        <div className="flex flex-col items-start md:items-end w-full md:w-1/2 gap-4 mt-4 md:mt-0">
-                            <p className={`text-sm md:text-lg font-mono tracking-tight text-left md:text-right max-w-md transition-colors duration-300 ${isPast ? 'text-white/20' : 'text-white/60 group-hover:text-white'}`}>
-                                {event.lineup}
-                            </p>
-                            
-                            <div className="mt-2 flex items-center justify-start md:justify-end gap-4 w-full">
-                                {event.scarcity === 'low' && !isPast && !event.onLocationOnly && (
-                                    <span className="text-red-500 text-xs font-bold uppercase animate-pulse border border-red-500 px-2 py-1">Low Stock</span>
-                                )}
-                                
-                                <a href={mapUrl} target="_blank" rel="noopener noreferrer" className={`w-10 h-10 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center rounded-full border transition-all duration-300 ${isPast ? 'border-white/10 text-white/20' : 'border-white/20 hover:border-white hover:bg-white hover:text-black group-hover:border-white'}`}>
-                                    <MapPin className="w-4 h-4 md:w-5 md:h-5" />
-                                </a>
 
-                                <span className={`text-xs md:text-sm font-black uppercase tracking-widest px-6 py-3 border rounded-full transition-all duration-300 ${isPast ? 'border-white/10 text-white/20' : 'border-white/20 text-white group-hover:bg-white group-hover:text-black group-hover:border-white'}`}>
-                                    {status}
-                                </span>
+                        <div className="flex flex-col md:flex-row justify-between items-end gap-6">
+                            <div className="flex flex-col">
+                                <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-white drop-shadow-xl">{event.city}</h2>
+                                <p className="text-accent uppercase tracking-widest text-sm md:text-lg font-bold mb-4 drop-shadow-md">{event.venue}</p>
+                                <p className="font-mono text-sm md:text-base text-white/80 max-w-md bg-black/40 backdrop-blur-sm p-3 rounded-lg border border-white/10">{event.lineup}</p>
+                            </div>
+
+                            <div className="flex flex-col items-end gap-4 w-full md:w-auto">
+                                {event.hasCountdown && !isPast && <Countdown targetDate={event.isoDate} />}
+                                <div className="flex items-center gap-3 w-full md:w-auto">
+                                    <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
+                                        <MapPin className="w-5 h-5" />
+                                    </a>
+                                    <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`flex-1 md:flex-none px-8 py-4 rounded-full uppercase font-black tracking-widest text-xs md:text-sm transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-black/40 backdrop-blur-sm text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_30px_rgba(214,208,31,0.4)] cursor-none'}`}>
+                                        {displayStatus}
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
             );
         };
 
         const Events = ({ onLinkClick }) => {
-            const [hoveredEvent, setHoveredEvent] = useState(null);
-            const mouseX = useMotionValue(0);
-            const mouseY = useMotionValue(0);
+            const containerRef = useRef(null);
             
-            // Physics springs for the hovering image
-            const springX = useSpring(mouseX, { stiffness: 150, damping: 15, mass: 0.5 });
-            const springY = useSpring(mouseY, { stiffness: 150, damping: 15, mass: 0.5 });
-
-            useEffect(() => {
-                const handleMouseMove = (e) => {
-                    mouseX.set(e.clientX);
-                    mouseY.set(e.clientY);
-                };
-                window.addEventListener("mousemove", handleMouseMove);
-                return () => window.removeEventListener("mousemove", handleMouseMove);
-            }, [mouseX, mouseY]);
-
             const sortedEvents = [...EVENTS].sort((a, b) => {
                 const dateA = new Date(a.isoDate);
                 const dateB = new Date(b.isoDate);
@@ -504,63 +533,50 @@
                 return (dateA < now && dateB < now) ? dateB - dateA : dateA - dateB;
             });
 
+            // The container is 400vh tall to allow scrolling through 4 cards
+            const totalHeight = `${sortedEvents.length * 100}vh`;
+            
+            const { scrollYProgress } = useScroll({ 
+                target: containerRef, 
+                offset: ["start start", "end end"] 
+            });
+
             return (
-                <section id="events" className="bg-black py-20 md:py-40 relative z-10 text-white">
-                    {/* Titelei */}
-                    <div className="container mx-auto px-4 mb-16 md:mb-24">
-                        <div className="flex flex-col">
-                             <h2 className="text-[12vw] md:text-[8vw] font-black leading-[0.85] uppercase tracking-tighter">
+                <section id="events" ref={containerRef} className="relative z-10 bg-black border-b border-white/10" style={{ height: totalHeight }}>
+                    {/* Sticky Container holds the layout fixed while we scroll through height */}
+                    <div className="sticky top-0 h-screen w-full flex flex-col items-center overflow-hidden bg-black pt-24 md:pt-32">
+                        
+                        <div className="w-full max-w-6xl px-4 flex justify-between items-end mb-8 md:mb-12 z-50 pointer-events-none">
+                            <h2 className="text-white text-[10vw] md:text-[5vw] font-black leading-[0.9] uppercase tracking-tighter drop-shadow-2xl">
                                 <DecryptedText text="Kommende" /> <br /> <span className="text-stroke-white text-transparent">Nächte</span>
                             </h2>
+                            <div className="hidden md:flex items-center gap-4 text-white/40 font-mono text-sm tracking-widest uppercase">
+                                <span><span className="text-accent animate-pulse inline-block w-2 h-2 rounded-full mr-2"></span>Live Feed</span>
+                                <span>{sortedEvents.length} Events</span>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* The Editorial List */}
-                    <div className="w-full flex flex-col border-t border-white/10" onMouseLeave={() => setHoveredEvent(null)}>
-                        {sortedEvents.map(event => (
-                            <EventRow 
-                                key={event.id} 
-                                event={event} 
-                                onHover={setHoveredEvent} 
-                                isHovered={hoveredEvent?.id === event.id} 
-                                onLinkClick={onLinkClick} 
-                            />
-                        ))}
-                    </div>
-
-                    {/* The Floating Image Reveal (Desktop Only) */}
-                    <motion.div 
-                        className="fixed top-0 left-0 w-[350px] md:w-[450px] aspect-[4/5] pointer-events-none z-50 overflow-hidden hidden md:block rounded-xl border border-white/10"
-                        style={{
-                            x: springX,
-                            y: springY,
-                            translateX: "-50%",
-                            translateY: "-50%",
-                            opacity: hoveredEvent ? 1 : 0,
-                            scale: hoveredEvent ? 1 : 0.5,
-                        }}
-                    >
-                        <AnimatePresence mode="wait">
-                            {hoveredEvent && (
-                                <motion.img 
-                                    key={hoveredEvent.id}
-                                    src={hoveredEvent.image}
-                                    initial={{ opacity: 0, scale: 1.2, filter: "blur(10px)" }}
-                                    animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                                    exit={{ opacity: 0, scale: 1.1, filter: "blur(5px)" }}
-                                    transition={{ duration: 0.4, ease: "easeOut" }}
-                                    className="w-full h-full object-cover grayscale"
-                                    alt="Event"
+                        {/* The Stack Area */}
+                        <div className="relative w-[92vw] md:w-[75vw] max-w-5xl h-[65vh] md:h-[70vh]">
+                            {sortedEvents.map((event, index) => (
+                                <StackedEventCard 
+                                    key={event.id} 
+                                    event={event} 
+                                    index={index} 
+                                    total={sortedEvents.length} 
+                                    scrollYProgress={scrollYProgress} 
+                                    onLinkClick={onLinkClick}
                                 />
-                            )}
-                        </AnimatePresence>
-                    </motion.div>
+                            ))}
+                        </div>
+
+                    </div>
                 </section>
             );
         };
         /* ------------------------------------------------------------------------------------------------ */
 
-        /* 1. INFOS: "THE MELTING TYPE" (Mobile SVG Fix) */
+        /* 1. INFOS: "THE MELTING TYPE" */
         const Infos = () => {
             const { scrollY } = useScroll();
             const scrollVelocity = useVelocity(scrollY);
@@ -576,7 +592,7 @@
             });
 
             return (
-                <section id="infos" className="relative py-32 md:py-64 bg-black z-10 overflow-hidden border-t border-white/10">
+                <section id="infos" className="relative py-32 md:py-64 bg-black z-10 overflow-hidden">
                     <div className="container mx-auto px-4 flex flex-col items-center justify-center min-h-[40vh]">
                         <div style={{ filter: 'url(#liquid-distort-infos)' }} className="text-center will-change-transform" id="infos-text-container">
                             <h2 className="text-[12vw] md:text-[8vw] font-black uppercase tracking-tighter leading-[0.85] text-white">
@@ -610,7 +626,6 @@
                 <section id="aktuelles" ref={targetRef} className="relative h-[200vh] bg-[#050505] z-20 border-y border-white/5">
                     <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden perspective-container">
                         
-                        {/* THE REVEALED BACKGROUND: B-SIDE INFO */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-accent text-black p-4 z-0">
                             <span className="font-mono font-bold tracking-widest uppercase mb-4 animate-pulse border border-black px-4 py-1">+++ SYSTEM OVERRIDE +++</span>
                             <h2 className="text-[15vw] md:text-[10vw] font-black uppercase tracking-tighter leading-[0.85] text-center mb-12 text-black mix-blend-overlay">
@@ -621,7 +636,6 @@
                             </MagneticButton>
                         </div>
 
-                        {/* THE FOREGROUND: SHATTERING PULLUP LOGO IN 5 SLICES */}
                         <div className="absolute inset-0 z-10 flex w-full h-full pointer-events-none">
                             {[...Array(5)].map((_, i) => {
                                 const ySign = i % 2 === 0 ? -1 : 1;
@@ -637,7 +651,6 @@
                                         className="h-full relative overflow-hidden preserve-3d"
                                         style={{ width: '20%', y: moveY, z: moveZ, rotateX: rotX, rotateY: rotY, opacity: opacity }}
                                     >
-                                        {/* The full screen logo centered inside the slice via negative left offset */}
                                         <div className="absolute top-0 h-full w-[100vw] bg-black flex items-center justify-center border-r border-white/5" style={{ left: `-${i * 20}vw` }}>
                                             <img src="logo.png" className="w-[80vw] md:w-[40vw] max-w-2xl object-contain opacity-90 drop-shadow-[0_0_20px_rgba(214,208,31,0.2)]" alt="PULLUP Split" />
                                         </div>
@@ -698,7 +711,6 @@
                 </section>
             );
         };
-        /* ------------------------------------------------------------------------------------------------ */
 
         const GalleryTicker = () => {
             const images = [ "6.jpg", "7.jpg", "8.jpg", "1.jpg", "2.jpg" ];
@@ -845,7 +857,6 @@
                             <GlobalBackground />
                             <Header onLinkClick={handleLinkClick} />
                             
-                            {/* KEINE LiquidScrollWrapper HIER MEHR - VERHINDERT MOBILE BUGS UND KONFLIKTE */}
                             <Hero />
                             <Marquee />
                             <Events onLinkClick={handleLinkClick} />
