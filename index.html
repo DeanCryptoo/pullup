@@ -85,6 +85,7 @@
             animation: spin-slow 8s linear infinite;
         }
 
+        /* HARDCORE GPU ACCELERATION FÜR MOBILE (Löst das Ruckeln bei Aktuelles und Story) */
         .gpu-accelerated {
             transform: translate3d(0, 0, 0);
             backface-visibility: hidden;
@@ -712,7 +713,7 @@
             );
         };
 
-        /* 2. AKTUELLES: "THE VAULT" (100K PERFECT TIMING & GPU FIX) */
+        /* 2. AKTUELLES: "THE VAULT" */
         const News = () => {
             const targetRef = useRef(null);
             const isInView = useInView(targetRef, { amount: 0.7, once: false });
@@ -781,14 +782,14 @@
             );
         };
 
-        /* 3. STORY: "THE HORIZONTAL REEL" (SMOOTH SPRING PHYSICS) */
+        /* 3. STORY: "THE HORIZONTAL REEL" (SCROLL-LOCK FIX) */
         const Story = () => {
             const targetRef = useRef(null);
             const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
             
-            // 100K FIX: Dieser Stoßdämpfer ist zurück! Er schluckt die ruckeligen Handy-Scroll-Signale
-            const smoothProgress = useSpring(scrollYProgress, { stiffness: 50, damping: 20, mass: 0.5 });
-            const x = useTransform(smoothProgress, [0, 1], ["0%", "-66.666%"]);
+            // 100K FIX: Die horizontale Animation endet bei 80% des Scroll-Wegs. 
+            // Die restlichen 20% beim Scrollen bleibt das 3. Bild exakt in der Mitte stehen, bevor die Sektion nach oben wegscrollt.
+            const x = useTransform(scrollYProgress, [0, 0.8], ["0%", "-66.666%"]);
 
             return (
                 <section id="story" ref={targetRef} className="relative h-[250vh] md:h-[300vh] bg-black z-10 border-t border-white/10">
@@ -798,14 +799,12 @@
                             <h2 className="text-[30vw] font-black uppercase tracking-tighter select-none">ENERGY</h2>
                         </div>
                         
-                        {/* GPU ACCELERATED WRAPPER */}
                         <motion.div style={{ x }} className="flex w-[300vw] h-full items-center gpu-accelerated">
                             
                             <div className="w-[100vw] h-full flex flex-col justify-center px-10 md:px-24 relative z-10">
                                 <h3 className="text-accent text-xs md:text-sm tracking-widest font-mono mb-4 uppercase">Kapitel 01</h3>
                                 <h2 className="text-5xl md:text-[6vw] font-black uppercase mb-8 leading-[0.85] tracking-tighter">Mehr als<br/>eine Party.</h2>
                                 <div className="relative w-[85vw] md:w-[60vw] aspect-[16/9] md:aspect-[21/9] overflow-hidden group">
-                                    {/* 100K FIX: Kein gpu-accelerated mehr auf dem img, das spart massiv VRAM! */}
                                     <img src="6.jpg" className="w-full h-full object-cover grayscale md:opacity-60 md:group-hover:grayscale-0 md:group-hover:opacity-100 transition-all duration-700 md:group-hover:scale-105" alt="Story 1" />
                                 </div>
                             </div>
