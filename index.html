@@ -103,6 +103,7 @@
             height: 32px;
         }
 
+        /* Utility für vertikalen Text im Line-Up Accordion (nur Desktop) */
         .writing-vertical {
             writing-mode: vertical-rl;
             text-orientation: mixed;
@@ -453,25 +454,41 @@
         };
 
         /* ------------------------------------------------------------------------------------------------ */
-        /* --- KINETIC ACCORDION (LINE-UP) MIT RIESENRAD (DESKTOP & MOBILE)                             --- */
+        /* --- 100K KINETIC ACCORDION (LINE-UP) MIT DRAGGABLE RIESENRAD-KARUSSELL                       --- */
         /* ------------------------------------------------------------------------------------------------ */
 
         const ArtistCarousel = ({ artists, className, isMobile }) => {
             const [index, setIndex] = useState(0);
+            const [isDragging, setIsDragging] = useState(false);
 
+            // Auto-Rotation stoppt, wenn der User swipet/dragt
             useEffect(() => {
+                if (isDragging) return;
                 const timer = setInterval(() => {
                     setIndex((prevIndex) => (prevIndex + 1) % artists.length);
                 }, 3000); 
                 return () => clearInterval(timer);
-            }, [artists.length]);
+            }, [artists.length, isDragging]);
+
+            // Drag-Logik: Erkennt Wischen nach links oder rechts
+            const handleDragEnd = (e, { offset }) => {
+                const swipeThreshold = 50;
+                if (offset.x < -swipeThreshold) {
+                    // Nach links gewischt -> Nächster Artist
+                    setIndex((prev) => (prev + 1) % artists.length);
+                } else if (offset.x > swipeThreshold) {
+                    // Nach rechts gewischt -> Vorheriger Artist
+                    setIndex((prev) => (prev - 1 + artists.length) % artists.length);
+                }
+                // Kurzes Delay, damit der Click nicht als Drag gewertet wird
+                setTimeout(() => setIsDragging(false), 100);
+            };
 
             const prevIndex = (index - 1 + artists.length) % artists.length;
             const nextIndex = (index + 1) % artists.length;
 
             const getSlotProps = (slotIndex) => {
                 if (isMobile) {
-                    // MOBILE: Höhere Sichtbarkeit, flacherer Bogen
                     switch (slotIndex) {
                         case 0: return { x: "-32vw", y: "0vh", scale: 0.75, opacity: 0.6, zIndex: 5, filter: "blur(1px)" };
                         case 1: return { x: "0vw", y: "0vh", scale: 1, opacity: 1, zIndex: 10, filter: "blur(0px)" };
@@ -479,7 +496,6 @@
                         default: return {};
                     }
                 } else {
-                    // DESKTOP: Fokus auf Next/Prev verbessert (weniger Blur, mehr Opacity)
                     switch (slotIndex) {
                         case 0: return { x: "-20vw", y: "4vh", scale: 0.75, opacity: 0.7, zIndex: 5, filter: "blur(1px)" };
                         case 1: return { x: "0vw", y: "0vh", scale: 1, opacity: 1, zIndex: 10, filter: "blur(0px)" };
@@ -490,7 +506,16 @@
             };
 
             return (
-                <div className={`absolute left-0 right-0 flex items-center justify-center pointer-events-none z-0 ${className}`}>
+                // Der Drag-Wrapper erlaubt Swipes im gesamten Karussell-Bereich
+                <motion.div 
+                    className={`absolute left-0 right-0 flex items-center justify-center z-10 cursor-grab active:cursor-grabbing ${className}`}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.1}
+                    onDragStart={() => setIsDragging(true)}
+                    onDragEnd={handleDragEnd}
+                    style={{ touchAction: 'pan-y' }} // Erlaubt vertikales Scrollen der Website
+                >
                     {artists.map((artist, artistIdx) => {
                         let position = -1; 
                         if (artistIdx === index) position = 1; 
@@ -506,7 +531,7 @@
                         return (
                             <motion.div
                                 key={artistIdx}
-                                className={`absolute ${cardSize} rounded-xl overflow-hidden border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.8)]`}
+                                className={`absolute ${cardSize} rounded-xl overflow-hidden border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.8)] pointer-events-none`}
                                 initial={false} 
                                 animate={props}
                                 transition={{ type: "spring", stiffness: 90, damping: 20 }}
@@ -522,7 +547,7 @@
                             </motion.div>
                         );
                     })}
-                </div>
+                </motion.div>
             );
         };
 
@@ -557,8 +582,8 @@
                         </div>
                     </div>
 
-                    {/* Flex-Col on Mobile (Stapel), Flex-Row on Desktop (Nebeneinander) */}
-                    <div className="w-full h-[75vh] md:h-[70vh] flex flex-col md:flex-row px-2 md:px-4 gap-2 md:gap-2">
+                    {/* 100K MOBILE FIX: Container deutlich höher (85vh) für massiven 9:16 Poster-Look auf dem Handy */}
+                    <div className="w-full h-[85vh] md:h-[70vh] flex flex-col md:flex-row px-2 md:px-4 gap-2 md:gap-2">
                         {sortedEvents.map((event) => {
                             const isActive = activeEvent === event.id;
                             
@@ -574,9 +599,9 @@
                             const isClickable = !isPast && !isLocationOnly && displayStatus !== 'AUSVERKAUFT';
                             const mapUrl = "https://share.google/95gzX5b2O3N3pxq73"; 
 
-                            // 100K MOBILE FIX: Die aktive Karte nimmt fast den ganzen Screen ein, die anderen sind Tabs
-                            const activeClass = isMobile ? 'w-full h-[70%]' : 'w-[80%] h-full';
-                            const inactiveClass = isMobile ? 'w-full h-[10%]' : 'w-[6%] h-full';
+                            // Mobile bekommt 78% Höhe, Inaktive Tabs sind superschmal (7%)
+                            const activeClass = isMobile ? 'w-full h-[78%]' : 'w-[80%] h-full';
+                            const inactiveClass = isMobile ? 'w-full h-[7%]' : 'w-[6%] h-full';
 
                             return (
                                 <motion.div 
@@ -592,7 +617,7 @@
                                             className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-100 grayscale-0 opacity-30' : 'scale-150 grayscale opacity-20'}`} 
                                             alt={event.city} 
                                         />
-                                        <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black via-black/80 to-transparent' : 'bg-black/60'}`}></div>
+                                        <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/95 via-black/50 to-transparent' : 'bg-black/60'}`}></div>
                                     </div>
 
                                     <AnimatePresence>
@@ -602,10 +627,10 @@
                                                 animate={{ opacity: 1, y: 0 }} 
                                                 exit={{ opacity: 0, y: 20 }}
                                                 transition={{ duration: 0.3, delay: 0.2 }}
-                                                className="absolute inset-0 p-5 md:p-12 z-10 flex flex-col justify-between overflow-hidden"
+                                                className="absolute inset-0 p-5 md:p-12 z-10 flex flex-col justify-between overflow-hidden pointer-events-none" // pointer-events-none hier, damit Drag funktioniert
                                             >
                                                 {/* Top Row: Date & Stock */}
-                                                <div className="flex justify-between items-start relative z-20">
+                                                <div className="flex justify-between items-start relative z-20 pointer-events-auto">
                                                     <span className="text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 tracking-tighter drop-shadow-2xl">
                                                         {event.date}
                                                     </span>
@@ -614,22 +639,22 @@
                                                     )}
                                                 </div>
 
-                                                {/* Das Riesenrad-Künstler-Karussell (Jetzt für Mobile & Desktop) */}
-                                                <ArtistCarousel artists={event.artists} isMobile={isMobile} className="top-[20%] md:top-[15%] bottom-[40%] md:bottom-1/4" />
+                                                {/* Das SWIPEBARE Riesenrad-Künstler-Karussell */}
+                                                <ArtistCarousel artists={event.artists} isMobile={isMobile} className="top-[25%] md:top-[15%] bottom-[35%] md:bottom-1/4 pointer-events-auto" />
 
                                                 {/* Bottom Row: Text & Action */}
-                                                <div className="relative z-20 flex flex-col md:flex-row justify-between items-start md:items-end gap-3 md:gap-6 mt-auto">
+                                                <div className="relative z-20 flex flex-col md:flex-row justify-between items-start md:items-end gap-3 md:gap-6 mt-auto pointer-events-auto">
                                                     <div className="flex flex-col">
-                                                        <h3 className="text-3xl md:text-6xl font-black uppercase text-white tracking-tighter mb-0 md:mb-2 drop-shadow-lg">{event.city}</h3>
-                                                        <span className="text-accent uppercase tracking-widest text-[10px] md:text-base font-bold mb-2 md:mb-4 drop-shadow-md">{event.venue}</span>
+                                                        <h3 className="text-4xl md:text-6xl font-black uppercase text-white tracking-tighter mb-0 md:mb-2 drop-shadow-lg">{event.city}</h3>
+                                                        <span className="text-accent uppercase tracking-widest text-xs md:text-base font-bold mb-2 md:mb-4 drop-shadow-md">{event.venue}</span>
                                                         <p className="font-mono text-[10px] md:text-lg text-white/80 max-w-lg bg-black/60 backdrop-blur-sm p-2 rounded-lg border border-white/10 hidden md:block">{event.lineup}</p>
                                                     </div>
                                                     
                                                     <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto mt-1 md:mt-0">
-                                                        <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
-                                                            <MapPin className="w-4 h-4 md:w-5 md:h-5" />
+                                                        <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="w-12 h-12 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
+                                                            <MapPin className="w-5 h-5 md:w-5 md:h-5" />
                                                         </a>
-                                                        <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`flex-1 md:flex-none px-4 md:px-10 py-3 md:py-4 rounded-full uppercase font-black tracking-widest text-[11px] md:text-sm transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-black/60 backdrop-blur-sm text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
+                                                        <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`flex-1 md:flex-none px-4 md:px-10 py-4 md:py-4 rounded-full uppercase font-black tracking-widest text-[12px] md:text-sm transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-black/60 backdrop-blur-sm text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
                                                             {displayStatus}
                                                         </a>
                                                     </div>
@@ -658,7 +683,6 @@
                 </section>
             );
         };
-
         /* ------------------------------------------------------------------------------------------------ */
 
         /* 1. INFOS: "THE MELTING TYPE" */
@@ -739,7 +763,6 @@
                                         className="h-full relative overflow-hidden preserve-3d"
                                         style={{ width: '20%', y: moveY, z: moveZ, rotateX: rotX, rotateY: rotY, opacity: opacity }}
                                     >
-                                        {/* The full screen logo centered inside the slice via negative left offset */}
                                         <div className="absolute top-0 h-full w-[100vw] bg-black flex items-center justify-center border-r border-white/5" style={{ left: `-${i * 20}vw` }}>
                                             <img src="logo.png" className="w-[80vw] md:w-[40vw] max-w-2xl object-contain opacity-90 drop-shadow-[0_0_20px_rgba(214,208,31,0.2)]" alt="PULLUP Split" />
                                         </div>
