@@ -85,7 +85,6 @@
             animation: spin-slow 8s linear infinite;
         }
 
-        /* HARDCORE GPU ACCELERATION FÜR MOBILE (Löst das Ruckeln bei Aktuelles und Story) */
         .gpu-accelerated {
             transform: translate3d(0, 0, 0);
             backface-visibility: hidden;
@@ -93,7 +92,12 @@
             will-change: transform;
         }
         
-        /* 100K EXTREM ZERKNITTERTER KASSENBON */
+        .will-change-transform {
+            will-change: transform, opacity;
+            transform: translate3d(0,0,0); 
+            backface-visibility: hidden;
+        }
+        
         .receipt-crumpled {
             background-color: #f0f0e6; 
             background-image: 
@@ -253,7 +257,7 @@
 
             return (
                 <motion.div
-                    className="fixed top-0 left-0 w-6 h-6 rounded-full pointer-events-none z-[9999] mix-blend-difference gpu-accelerated"
+                    className="fixed top-0 left-0 w-6 h-6 rounded-full pointer-events-none z-[9999] mix-blend-difference will-change-transform"
                     style={{ x: smoothX, y: smoothY, translateX: "-50%", translateY: "-50%", backgroundColor: 'var(--color-accent)' }}
                 />
             );
@@ -306,27 +310,6 @@
             );
         };
 
-        const Countdown = ({ targetDate }) => {
-            const [time, setTime] = useState("00:00:00:00");
-            useEffect(() => {
-                const target = new Date(targetDate).getTime();
-                const updateTimer = () => {
-                    const now = new Date().getTime();
-                    const diff = target - now;
-                    if (diff <= 0) return setTime("LIVE NOW");
-                    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    const s = Math.floor((diff % (1000 * 60)) / 1000);
-                    setTime(`${d}d ${h}h ${m}m ${s}s`);
-                };
-                updateTimer();
-                const interval = setInterval(updateTimer, 1000);
-                return () => clearInterval(interval);
-            }, [targetDate]);
-            return <span className="font-mono text-accent text-sm md:text-base font-bold tracking-widest">{time}</span>;
-        };
-
         const GlitchTransition = ({ isActive }) => {
             if (!isActive) return null;
             return (
@@ -357,7 +340,7 @@
             return (
                 <div className="fixed inset-0 z-0 pointer-events-none">
                     {isDesktop && (
-                        <motion.div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full opacity-20 mix-blend-screen gpu-accelerated" style={{ x: springX, y: springY, translateX: "-50%", translateY: "-50%", background: 'radial-gradient(circle, var(--color-accent) 0%, rgba(0,0,0,0) 70%)' }} />
+                        <motion.div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full opacity-20 mix-blend-screen will-change-transform" style={{ x: springX, y: springY, translateX: "-50%", translateY: "-50%", background: 'radial-gradient(circle, var(--color-accent) 0%, rgba(0,0,0,0) 70%)' }} />
                     )}
                     <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`, backgroundRepeat: 'repeat' }} />
                 </div>
@@ -732,15 +715,12 @@
         /* 2. AKTUELLES: "THE VAULT" (100K PERFECT TIMING & GPU FIX) */
         const News = () => {
             const targetRef = useRef(null);
-            // 100K FIX: Startet ERST, wenn 70% der Sektion im Bild sind. 
-            // So sieht man das PULLUP Logo genau in der Mitte, bevor es reißt!
             const isInView = useInView(targetRef, { amount: 0.7, once: false });
 
             return (
                 <section id="aktuelles" ref={targetRef} className="relative h-[100vh] bg-black z-20 border-y border-white/5 overflow-hidden">
                     <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-black overflow-hidden">
                         
-                        {/* THE CINEMATIC CONTROL ROOM (Background) */}
                         <motion.div 
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: isInView ? 1 : 0.8, opacity: isInView ? 1 : 0 }}
@@ -768,9 +748,7 @@
                             </div>
                         </motion.div>
 
-                        {/* THE VAULT DOORS (Foreground Logo Split) */}
                         <div className="absolute inset-0 z-10 flex pointer-events-none">
-                            {/* 100K FIX: Kein Opacity-Fade mehr beim Logo! Es bleibt knackscharf bis es aus dem Bild rutscht. Zudem 0.15s Delay, damit das Auge das Logo kurz sieht. */}
                             <motion.div 
                                 initial={{ x: "0%" }}
                                 animate={{ x: isInView ? "-100%" : "0%" }}
@@ -803,14 +781,14 @@
             );
         };
 
-        /* 3. STORY: "THE HORIZONTAL REEL" (PURE CSS SCROLL, NO LAGGY SPRING PHYSICS ON MOBILE) */
+        /* 3. STORY: "THE HORIZONTAL REEL" (SMOOTH SPRING PHYSICS) */
         const Story = () => {
             const targetRef = useRef(null);
-            // 100K FIX: h-[250vh] für den perfekten horizontalen Scroll auf dem Handy. 
             const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
             
-            // PURE lineare Mathematik. Keine Physics Engine auf Mobile = Kein Ruckeln.
-            const x = useTransform(scrollYProgress, [0, 1], ["0%", "-66.666%"]);
+            // 100K FIX: Dieser Stoßdämpfer ist zurück! Er schluckt die ruckeligen Handy-Scroll-Signale
+            const smoothProgress = useSpring(scrollYProgress, { stiffness: 50, damping: 20, mass: 0.5 });
+            const x = useTransform(smoothProgress, [0, 1], ["0%", "-66.666%"]);
 
             return (
                 <section id="story" ref={targetRef} className="relative h-[250vh] md:h-[300vh] bg-black z-10 border-t border-white/10">
@@ -827,7 +805,8 @@
                                 <h3 className="text-accent text-xs md:text-sm tracking-widest font-mono mb-4 uppercase">Kapitel 01</h3>
                                 <h2 className="text-5xl md:text-[6vw] font-black uppercase mb-8 leading-[0.85] tracking-tighter">Mehr als<br/>eine Party.</h2>
                                 <div className="relative w-[85vw] md:w-[60vw] aspect-[16/9] md:aspect-[21/9] overflow-hidden group">
-                                    <img src="6.jpg" className="w-full h-full object-cover grayscale md:opacity-60 md:group-hover:grayscale-0 md:group-hover:opacity-100 transition-all duration-700 md:group-hover:scale-105 gpu-accelerated" alt="Story 1" />
+                                    {/* 100K FIX: Kein gpu-accelerated mehr auf dem img, das spart massiv VRAM! */}
+                                    <img src="6.jpg" className="w-full h-full object-cover grayscale md:opacity-60 md:group-hover:grayscale-0 md:group-hover:opacity-100 transition-all duration-700 md:group-hover:scale-105" alt="Story 1" />
                                 </div>
                             </div>
 
@@ -835,13 +814,13 @@
                                 <h3 className="text-accent text-xs md:text-sm tracking-widest font-mono mb-4 uppercase">Kapitel 02</h3>
                                 <h2 className="text-5xl md:text-[6vw] font-black uppercase mb-8 leading-[0.85] tracking-tighter">Kultur<br/>gestalten.</h2>
                                 <div className="relative w-[85vw] md:w-[60vw] aspect-[16/9] md:aspect-[21/9] overflow-hidden group">
-                                    <img src="7.jpg" className="w-full h-full object-cover grayscale md:opacity-60 md:group-hover:grayscale-0 md:group-hover:opacity-100 transition-all duration-700 md:group-hover:scale-105 gpu-accelerated" alt="Story 2" />
+                                    <img src="7.jpg" className="w-full h-full object-cover grayscale md:opacity-60 md:group-hover:grayscale-0 md:group-hover:opacity-100 transition-all duration-700 md:group-hover:scale-105" alt="Story 2" />
                                 </div>
                             </div>
 
                             <div className="w-[100vw] h-full flex items-center justify-center relative z-10">
                                 <div className="absolute inset-0">
-                                    <img src="5.jpg" className="w-full h-full object-cover opacity-30 gpu-accelerated" alt="Story 3" />
+                                    <img src="5.jpg" className="w-full h-full object-cover opacity-30" alt="Story 3" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black"></div>
                                 </div>
                                 <h2 className="relative text-6xl md:text-[10vw] font-black uppercase tracking-tighter z-10 text-center leading-[0.8]">
@@ -868,7 +847,7 @@
                             {[...images, ...images, ...images].map((src, i) => (
                                 <div key={i} className="relative w-[300px] h-[350px] md:w-[400px] md:h-[500px] shrink-0 overflow-hidden rounded-md group cursor-none">
                                     <div className="absolute inset-0 bg-accent mix-blend-multiply opacity-0 group-hover:opacity-60 transition-opacity duration-300 z-10" />
-                                    <img src={src} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110 gpu-accelerated" />
+                                    <img src={src} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110" />
                                 </div>
                             ))}
                         </motion.div>
