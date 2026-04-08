@@ -712,7 +712,7 @@
             );
         };
 
-        /* 2. AKTUELLES: "THE VAULT" (100K PERFORMANCE FIX - TRIGGER STATT SCROLL) */
+        /* 2. AKTUELLES: "THE VAULT" (LOGO VISIBILITY FIX) */
         const News = ({ onLinkClick }) => {
             const targetRef = useRef(null);
             // Sobald die Section zu 30% im Bild ist, feuert die Animation auf und bleibt so! Keine Daumen-Kopplung mehr.
@@ -721,7 +721,7 @@
             return (
                 /* Höhe auf h-screen reduziert, wir brauchen keinen ewig langen Scroll-Track mehr */
                 <section id="aktuelles" ref={targetRef} className="relative h-[100vh] bg-black z-20 border-y border-white/5 overflow-hidden">
-                    <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-black">
+                    <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-black overflow-hidden">
                         
                         {/* THE CINEMATIC CONTROL ROOM (Background) */}
                         <motion.div 
@@ -753,9 +753,10 @@
 
                         {/* THE VAULT DOORS (Foreground Logo Split) */}
                         <div className="absolute inset-0 z-10 flex pointer-events-none">
+                            {/* LINKE TÜR: BLEIBT 100% SICHTBAR WÄHREND DER BEWEGUNG */}
                             <motion.div 
                                 initial={{ x: "0%", opacity: 1 }}
-                                animate={{ x: isInView ? "-100%" : "0%", opacity: isInView ? 0 : 1 }}
+                                animate={{ x: isInView ? "-100%" : "0%" }}
                                 transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                                 className="w-1/2 h-full bg-[#050505] overflow-hidden relative gpu-accelerated"
                             >
@@ -766,9 +767,10 @@
                                 <div className="absolute right-0 top-0 bottom-0 w-[1px] bg-accent/30"></div>
                             </motion.div>
                             
+                            {/* RECHTE TÜR: BLEIBT 100% SICHTBAR WÄHREND DER BEWEGUNG */}
                             <motion.div 
                                 initial={{ x: "0%", opacity: 1 }}
-                                animate={{ x: isInView ? "100%" : "0%", opacity: isInView ? 0 : 1 }}
+                                animate={{ x: isInView ? "100%" : "0%" }}
                                 transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                                 className="w-1/2 h-full bg-[#050505] overflow-hidden relative gpu-accelerated"
                             >
@@ -785,12 +787,11 @@
             );
         };
 
-        /* 3. STORY: "THE HORIZONTAL REEL" (Smooth Spring Physics) */
+        /* 3. STORY: "THE HORIZONTAL REEL" */
         const Story = () => {
             const targetRef = useRef(null);
             const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
             
-            // 100K FIX: Dieser "Stoßdämpfer" schluckt die ruckeligen Handy-Scroll-Signale und macht sie flüssig
             const smoothProgress = useSpring(scrollYProgress, { stiffness: 50, damping: 20, mass: 0.5 });
             const x = useTransform(smoothProgress, [0, 1], ["0%", "-66.666%"]);
 
@@ -862,7 +863,7 @@
             return (
                 <section id="merch" className="pt-16 pb-32 md:pt-32 md:pb-48 relative z-20 px-4 bg-black flex justify-center overflow-visible">
                     
-                    <div className="w-full max-w-2xl text-black relative transition-all duration-500 z-10 receipt-crumpled will-change-transform">
+                    <div className="w-full max-w-2xl text-black relative transition-all duration-500 z-10 receipt-crumpled">
                         
                         <div className="p-8 md:p-12 font-mono relative z-30">
                             <div className="text-center border-b-2 border-black/50 border-dashed pb-6 mb-6 relative ink-bleed">
