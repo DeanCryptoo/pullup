@@ -307,6 +307,27 @@
             );
         };
 
+        const Countdown = ({ targetDate }) => {
+            const [time, setTime] = useState("00:00:00:00");
+            useEffect(() => {
+                const target = new Date(targetDate).getTime();
+                const updateTimer = () => {
+                    const now = new Date().getTime();
+                    const diff = target - now;
+                    if (diff <= 0) return setTime("LIVE NOW");
+                    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((diff % (1000 * 60)) / 1000);
+                    setTime(`${d}d ${h}h ${m}m ${s}s`);
+                };
+                updateTimer();
+                const interval = setInterval(updateTimer, 1000);
+                return () => clearInterval(interval);
+            }, [targetDate]);
+            return <span className="font-mono text-accent text-sm md:text-base font-bold tracking-widest">{time}</span>;
+        };
+
         const GlitchTransition = ({ isActive }) => {
             if (!isActive) return null;
             return (
@@ -569,8 +590,8 @@
             }, []);
 
             return (
-                /* REDUZIERTES MOBILE PADDING */
-                <section id="events" className="bg-transparent pt-8 md:pt-32 pb-4 relative z-10">
+                /* Padding auf 16 gesetzt (pt-16 pb-16) */
+                <section id="events" className="bg-transparent pt-16 md:pt-32 pb-16 md:pb-16 relative z-10">
                     <div className="container mx-auto px-4 mb-6 md:mb-12">
                         <div className="flex items-start gap-4 mb-4">
                              <div className="w-3 h-3 md:w-4 md:h-4 bg-accent rounded-full mt-2 md:mt-4 animate-pulse shrink-0"></div>
@@ -671,7 +692,7 @@
         };
         /* ------------------------------------------------------------------------------------------------ */
 
-        /* 1. INFOS: "THE MELTING TYPE" (Lücke geschlossen) */
+        /* 1. INFOS: "THE MELTING TYPE" */
         const Infos = () => {
             const { scrollY } = useScroll();
             const scrollVelocity = useVelocity(scrollY);
@@ -687,8 +708,8 @@
             });
 
             return (
-                /* REDUZIERTES MOBILE PADDING (py-8 statt py-32) */
-                <section id="infos" className="relative py-8 md:py-32 bg-black z-10 overflow-hidden border-t border-white/10">
+                /* Padding auf 16 gesetzt (py-16) */
+                <section id="infos" className="relative py-16 md:py-32 bg-black z-10 overflow-hidden border-t border-white/10">
                     <div className="container mx-auto px-4 flex flex-col items-center justify-center min-h-[25vh] md:min-h-[40vh]">
                         <div style={{ filter: 'url(#liquid-distort-infos)' }} className="text-center will-change-transform" id="infos-text-container">
                             <h2 className="text-[12vw] md:text-[8vw] font-black uppercase tracking-tighter leading-[0.85] text-white">
@@ -712,7 +733,7 @@
             );
         };
 
-        /* 2. AKTUELLES: "THE VAULT" (Geringere Höhe auf Mobile = kein schwarzes Loch) */
+        /* 2. AKTUELLES: "THE VAULT" */
         const News = ({ onLinkClick }) => {
             const targetRef = useRef(null);
             const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
@@ -725,7 +746,6 @@
             const contentOpacity = useTransform(scrollYProgress, [0.1, 0.4], [0, 1]);
 
             return (
-                /* REDUZIERTE HÖHE AUF MOBILE (h-[120vh]) um die Scroll-Lücke zu schließen */
                 <section id="aktuelles" ref={targetRef} className="relative h-[120vh] md:h-[150vh] bg-black z-20 border-y border-white/5">
                     <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden bg-black">
                         
@@ -784,7 +804,6 @@
             const x = useTransform(scrollYProgress, [0, 1], ["0%", "-66.666%"]);
 
             return (
-                /* REDUZIERTE HÖHE AUF MOBILE (h-[200vh]) */
                 <section id="story" ref={targetRef} className="relative h-[200vh] md:h-[300vh] bg-black z-10 border-t border-white/10">
                     <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center bg-[#050505]">
                         
@@ -829,8 +848,8 @@
         const GalleryTicker = () => {
             const images = [ "6.jpg", "7.jpg", "8.jpg", "1.jpg", "2.jpg" ];
             return (
-                /* REDUZIERTES MOBILE PADDING */
-                <section id="gallery" className="bg-black py-8 md:py-24 overflow-hidden border-t border-white/10 z-10 relative">
+                /* Padding auf 16 gesetzt (py-16) */
+                <section id="gallery" className="bg-black py-16 md:py-24 overflow-hidden border-t border-white/10 z-10 relative">
                     <div className="mb-6 md:mb-12 container mx-auto px-4 flex justify-between items-end">
                          <h2 className="text-white text-3xl md:text-5xl font-bold uppercase tracking-tight">Vibe Check</h2>
                          <span className="text-accent animate-pulse uppercase tracking-widest hidden md:block">Live aus dem Pit</span>
@@ -851,17 +870,17 @@
 
         const Merch = ({ onLinkClick }) => {
             return (
-                /* MEHR PLATZ NACH UNTEN FÜR DEN FOOTER (pb-24 auf Mobile) */
-                <section id="merch" className="pt-8 pb-24 md:pt-32 md:pb-48 relative z-20 px-4 bg-black flex justify-center overflow-visible">
+                /* Padding auf 16 (pt-16) und Platz für Footer (pb-32) */
+                <section id="merch" className="pt-16 pb-32 md:pt-32 md:pb-48 relative z-20 px-4 bg-black flex justify-center overflow-visible">
                     
-                    {/* DER ZERKNITTERTE KASSENBON (Jetzt mit SVG Displacement & Harter Falte) */}
+                    {/* DER EXTREM ZERKNITTERTE KASSENBON */}
                     <div className="w-full max-w-2xl text-black relative transition-all duration-500 z-10 receipt-crumpled">
                         
                         <div className="p-8 md:p-12 font-mono relative z-30">
                             <div className="text-center border-b-2 border-black/50 border-dashed pb-6 mb-6 relative ink-bleed">
                                 <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-black/90">PULLUP KOLLEKTION</h2>
                                 <p className="text-sm md:text-base font-bold mt-2 text-black/80">SYS_ID: 884-992-A</p>
-                                <p className="text-xs mt-1 text-black/70">DATUM: {new Date().toLocaleDateString('de-DE')}</p>
+                                <p className="text-xs mt-1 opacity-70">DATUM: {new Date().toLocaleDateString('de-DE')}</p>
                             </div>
                             <div className="space-y-4 mb-8 ink-bleed">
                                 <div className="flex justify-between items-end border-b border-black/20 pb-2">
@@ -896,8 +915,8 @@
 
         const Footer = ({ onLinkClick }) => {
             return (
-                /* REDUZIERTES MOBILE PADDING & ÜBERLAPPUNG GEFIXT */
-                <footer id="contact" className="bg-accent text-black pt-12 md:pt-32 pb-8 md:pb-12 rounded-t-[2rem] md:rounded-t-[3rem] relative z-20 mt-[-2rem] md:mt-[-4rem] overflow-hidden">
+                /* Padding auf 16 gesetzt (pt-16) */
+                <footer id="contact" className="bg-accent text-black pt-16 md:pt-32 pb-8 md:pb-12 rounded-t-[2rem] md:rounded-t-[3rem] relative z-20 mt-[-1rem] md:mt-[-4rem] overflow-hidden">
                     <div className="container mx-auto px-6 md:px-12 flex flex-col justify-between min-h-[50vh] md:min-h-[60vh] relative z-10 mt-8">
                         <div className="grid md:grid-cols-2 gap-12">
                             <div>
