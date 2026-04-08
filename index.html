@@ -16,17 +16,16 @@
             --color-black: #050505;
         }
 
-        /* 100K SCHRIFTART-UPGRADE: Modernere, geometrische, fette Sans-Serif */
         body, a, button, input, textarea, select {
             font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
-            font-weight: 800; /* Extrabold */
+            font-weight: 800;
         }
 
         html, body {
             background-color: var(--color-black);
             margin: 0;
             padding: 0;
-            overflow-x: clip; /* Verhindert das seitliche Swipen auf dem Handy */
+            overflow-x: clip; 
             width: 100%;
             max-width: 100vw;
             -webkit-font-smoothing: antialiased;
@@ -106,7 +105,7 @@
     <svg style="position: absolute; width: 0; height: 0;">
         <defs>
             <filter id="liquid-distort">
-                <feTurbulence baseFrequency="0.02" numOctaves="3" result="noise" seed="1" />
+                <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" result="noise" />
                 <feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G" id="displacement-map" />
             </filter>
         </defs>
@@ -198,13 +197,7 @@
             return (
                 <motion.div
                     className="fixed top-0 left-0 w-6 h-6 rounded-full pointer-events-none z-[9999] mix-blend-difference will-change-transform"
-                    style={{
-                        x: smoothX,
-                        y: smoothY,
-                        translateX: "-50%",
-                        translateY: "-50%",
-                        backgroundColor: 'var(--color-accent)'
-                    }}
+                    style={{ x: smoothX, y: smoothY, translateX: "-50%", translateY: "-50%", backgroundColor: 'var(--color-accent)' }}
                 />
             );
         };
@@ -216,45 +209,22 @@
             const scramble = useCallback(() => {
                 let iteration = 0;
                 let interval = setInterval(() => {
-                    setDisplayText(prev => 
-                        text.split("").map((letter, index) => {
-                            if (index < iteration) {
-                                return text[index];
-                            }
-                            return chars[Math.floor(Math.random() * chars.length)];
-                        }).join("")
-                    );
-
-                    if (iteration >= text.length) {
-                        clearInterval(interval);
-                    }
-                    
+                    setDisplayText(prev => text.split("").map((letter, index) => {
+                        if (index < iteration) return text[index];
+                        return chars[Math.floor(Math.random() * chars.length)];
+                    }).join(""));
+                    if (iteration >= text.length) clearInterval(interval);
                     iteration += 1 / 3; 
                 }, 30);
                 return interval;
             }, [text]);
 
             useEffect(() => {
-                const timeout = setTimeout(() => {
-                    scramble();
-                }, revealDelay);
+                const timeout = setTimeout(() => scramble(), revealDelay);
                 return () => clearTimeout(timeout);
             }, [revealDelay, scramble]);
 
-            const handleMouseEnter = () => {
-                if (animateOnHover) {
-                    scramble();
-                }
-            };
-
-            return (
-                <span 
-                    className={className} 
-                    onMouseEnter={handleMouseEnter}
-                >
-                    {displayText}
-                </span>
-            );
+            return <span className={className} onMouseEnter={() => animateOnHover && scramble()}>{displayText}</span>;
         };
 
         const MagneticButton = ({ children, className, onClick }) => {
@@ -269,22 +239,11 @@
                 setPosition({ x: middleX * 0.2, y: middleY * 0.2 });
             };
 
-            const reset = () => {
-                setPosition({ x: 0, y: 0 });
-            };
-
+            const reset = () => setPosition({ x: 0, y: 0 });
             const { x, y } = position;
 
             return (
-                <motion.button
-                    ref={ref}
-                    className={className}
-                    onClick={onClick}
-                    animate={{ x, y }}
-                    transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
-                    onMouseMove={handleMouse}
-                    onMouseLeave={reset}
-                >
+                <motion.button ref={ref} className={className} onClick={onClick} animate={{ x, y }} transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }} onMouseMove={handleMouse} onMouseLeave={reset}>
                     {children}
                 </motion.button>
             );
@@ -292,69 +251,51 @@
 
         const Countdown = ({ targetDate }) => {
             const [time, setTime] = useState("00:00:00:00");
-            
             useEffect(() => {
                 const target = new Date(targetDate).getTime();
-                
                 const updateTimer = () => {
                     const now = new Date().getTime();
                     const diff = target - now;
-                    
-                    if (diff <= 0) {
-                        setTime("LIVE NOW");
-                        return;
-                    }
-                    
+                    if (diff <= 0) return setTime("LIVE NOW");
                     const d = Math.floor(diff / (1000 * 60 * 60 * 24));
                     const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                     const s = Math.floor((diff % (1000 * 60)) / 1000);
-                    
                     setTime(`${d}d ${h}h ${m}m ${s}s`);
                 };
-
                 updateTimer();
                 const interval = setInterval(updateTimer, 1000);
-                
                 return () => clearInterval(interval);
             }, [targetDate]);
-
             return <span className="font-mono text-accent text-sm md:text-base font-bold tracking-widest">{time}</span>;
         };
 
         const ScratchCard = ({ width, height, onReveal, children }) => {
             const canvasRef = useRef(null);
             const [isRevealed, setIsRevealed] = useState(false);
-
             useEffect(() => {
                 const canvas = canvasRef.current;
                 const ctx = canvas.getContext('2d');
-                
                 ctx.fillStyle = '#1a1a1a';
                 ctx.fillRect(0, 0, width, height);
                 ctx.fillStyle = '#333';
                 ctx.font = 'bold 20px monospace';
                 ctx.fillText("SCRATCH TO REVEAL", 20, height/2 + 5);
-                
                 for(let i=0; i<50; i++) {
                     ctx.fillStyle = Math.random() > 0.5 ? '#222' : '#111';
                     ctx.fillRect(Math.random() * width, Math.random() * height, 2, 2);
                 }
             }, [width, height]);
-
             const handleMouseMove = (e) => {
                 if (isRevealed) return;
                 const canvas = canvasRef.current;
                 const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
                 const ctx = canvas.getContext('2d');
                 ctx.globalCompositeOperation = 'destination-out';
                 ctx.beginPath();
-                ctx.arc(x, y, 20, 0, Math.PI * 2);
+                ctx.arc(e.clientX - rect.left, e.clientY - rect.top, 20, 0, Math.PI * 2);
                 ctx.fill();
             };
-
             return (
                 <div className="relative overflow-hidden rounded-md" style={{ width, height }}>
                     <div className="absolute inset-0 flex items-center justify-center bg-black border border-white/20">{children}</div>
@@ -368,14 +309,7 @@
             return (
                 <div className="fixed inset-0 z-[100] pointer-events-none mix-blend-difference flex flex-col">
                     {[...Array(10)].map((_, i) => (
-                        <motion.div
-                            key={i}
-                            className="w-full bg-white h-[10vh]"
-                            initial={{ x: i % 2 === 0 ? '-100%' : '100%' }}
-                            animate={{ x: 0 }}
-                            exit={{ x: i % 2 === 0 ? '100%' : '-100%' }}
-                            transition={{ duration: 0.2, delay: i * 0.02 }}
-                        />
+                        <motion.div key={i} className="w-full bg-white h-[10vh]" initial={{ x: i % 2 === 0 ? '-100%' : '100%' }} animate={{ x: 0 }} exit={{ x: i % 2 === 0 ? '100%' : '-100%' }} transition={{ duration: 0.2, delay: i * 0.02 }} />
                     ))}
                 </div>
             );
@@ -385,17 +319,13 @@
             const mouseX = useMotionValue(0);
             const mouseY = useMotionValue(0);
             const [isDesktop, setIsDesktop] = useState(false);
-
             const springX = useSpring(mouseX, { stiffness: 300, damping: 25 });
             const springY = useSpring(mouseY, { stiffness: 300, damping: 25 });
 
             useEffect(() => {
                 if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
                     setIsDesktop(true);
-                    const handleMouseMove = (e) => {
-                        mouseX.set(e.clientX);
-                        mouseY.set(e.clientY);
-                    };
+                    const handleMouseMove = (e) => { mouseX.set(e.clientX); mouseY.set(e.clientY); };
                     window.addEventListener('mousemove', handleMouseMove);
                     return () => window.removeEventListener('mousemove', handleMouseMove);
                 }
@@ -404,56 +334,22 @@
             return (
                 <div className="fixed inset-0 z-0 pointer-events-none">
                     {isDesktop && (
-                        <motion.div
-                            className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full opacity-20 mix-blend-screen will-change-transform"
-                            style={{ 
-                                x: springX, 
-                                y: springY, 
-                                translateX: "-50%", 
-                                translateY: "-50%",
-                                background: 'radial-gradient(circle, var(--color-accent) 0%, rgba(0,0,0,0) 70%)'
-                            }}
-                        />
+                        <motion.div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full opacity-20 mix-blend-screen will-change-transform" style={{ x: springX, y: springY, translateX: "-50%", translateY: "-50%", background: 'radial-gradient(circle, var(--color-accent) 0%, rgba(0,0,0,0) 70%)' }} />
                     )}
-                    <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay"
-                        style={{
-                            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-                            backgroundRepeat: 'repeat',
-                        }}
-                    />
+                    <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`, backgroundRepeat: 'repeat' }} />
                 </div>
             );
         };
 
         const Preloader = ({ setLoading }) => {
             useEffect(() => {
-                const timer = setTimeout(() => {
-                    setLoading(false);
-                }, 2000);
+                const timer = setTimeout(() => setLoading(false), 2000);
                 return () => clearTimeout(timer);
             }, [setLoading]);
-
             return (
-                <motion.div 
-                    className="fixed inset-0 z-[100] bg-black flex items-center justify-center p-8"
-                    initial={{ y: 0 }}
-                    exit={{ y: "-100%", transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } }}
-                >
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                        className="flex flex-col items-center"
-                    >
-                        <img 
-                            src="logo.png" 
-                            alt="PULLUP Logo" 
-                            className="w-48 md:w-64 object-contain mb-4"
-                            onError={(e) => {
-                                e.target.style.display = 'none';
-                                document.getElementById('fallback-logo').style.display = 'block';
-                            }}
-                        />
+                <motion.div className="fixed inset-0 z-[100] bg-black flex items-center justify-center p-8" initial={{ y: 0 }} exit={{ y: "-100%", transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } }}>
+                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, ease: "easeOut" }} className="flex flex-col items-center">
+                        <img src="logo.png" alt="PULLUP Logo" className="w-48 md:w-64 object-contain mb-4" onError={(e) => { e.target.style.display = 'none'; document.getElementById('fallback-logo').style.display = 'block'; }} />
                         <div id="fallback-logo" style={{display: 'none'}}>
                             <DecryptedText text="PULLUP" className="text-6xl md:text-8xl font-black text-accent tracking-tighter" />
                         </div>
@@ -464,57 +360,24 @@
 
         const Header = ({ onLinkClick }) => {
             const [isMenuOpen, setIsMenuOpen] = useState(false);
-
             return (
                 <>
                     <header className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[92%] max-w-6xl z-50 flex justify-between items-center bg-[#1a1a1a]/60 backdrop-blur-md border border-white/10 rounded-full px-4 md:px-8 py-3 md:py-4 pointer-events-auto shadow-2xl">
-                        
-                        <a href="#" className="text-xl md:text-2xl font-black tracking-tighter uppercase font-sans hover:scale-105 transition-transform text-white cursor-none">
-                            Pullup
-                        </a>
-
+                        <a href="#" className="text-xl md:text-2xl font-black tracking-tighter uppercase font-sans hover:scale-105 transition-transform text-white cursor-none">Pullup</a>
                         <nav className="hidden lg:flex items-center gap-6 xl:gap-10">
-                            {[
-                                { name: "Line-Up", id: "#events" },
-                                { name: "Infos", id: "#infos" },
-                                { name: "Aktuelles", id: "#aktuelles" },
-                                { name: "Story", id: "#story" },
-                                { name: "Merch", id: "#merch" }
-                            ].map((item) => (
-                                <a
-                                    key={item.name}
-                                    href={item.id}
-                                    onClick={(e) => { 
-                                        e.preventDefault(); 
-                                        onLinkClick(item.id, false); 
-                                    }}
-                                    className="text-white text-sm xl:text-base font-black uppercase tracking-widest hover:text-accent transition-colors cursor-none"
-                                >
-                                    {item.name}
-                                </a>
+                            {[ { name: "Line-Up", id: "#events" }, { name: "Infos", id: "#infos" }, { name: "Aktuelles", id: "#aktuelles" }, { name: "Story", id: "#story" }, { name: "Merch", id: "#merch" } ].map((item) => (
+                                <a key={item.name} href={item.id} onClick={(e) => { e.preventDefault(); onLinkClick(item.id, false); }} className="text-white text-sm xl:text-base font-black uppercase tracking-widest hover:text-accent transition-colors cursor-none">{item.name}</a>
                             ))}
                         </nav>
-
                         <div className="flex items-center gap-3 md:gap-4">
                             <div className="hidden md:flex bg-black/40 rounded-full p-1 border border-white/10">
                                 <button className="bg-white text-black px-3 py-1.5 rounded-full text-xs font-bold uppercase cursor-none">DE</button>
                                 <button className="text-white px-3 py-1.5 rounded-full text-xs font-bold uppercase hover:text-accent transition-colors cursor-none">EN</button>
                             </div>
-
-                            <MagneticButton 
-                                onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.linktree, true); }}
-                                className="bg-accent text-black px-5 md:px-8 py-2 md:py-3 rounded-full font-black uppercase tracking-widest text-xs md:text-sm hover:scale-105 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(214,208,31,0.4)] cursor-none"
-                            >
-                                <span className="flex items-center gap-1">
-                                    <svg className="w-4 h-4 md:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5v14l-8-4-4 2v-14l4-2 8 4z"></path></svg>
-                                    Tickets
-                                </span>
+                            <MagneticButton onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.linktree, true); }} className="bg-accent text-black px-5 md:px-8 py-2 md:py-3 rounded-full font-black uppercase tracking-widest text-xs md:text-sm hover:scale-105 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(214,208,31,0.4)] cursor-none">
+                                <span className="flex items-center gap-1"><svg className="w-4 h-4 md:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5v14l-8-4-4 2v-14l4-2 8 4z"></path></svg>Tickets</span>
                             </MagneticButton>
-
-                            <MagneticButton 
-                                onClick={() => setIsMenuOpen(true)}
-                                className="lg:hidden flex items-center justify-center p-2 rounded-full border border-white/20 hover:border-accent hover:text-accent transition-all cursor-none text-white"
-                            >
+                            <MagneticButton onClick={() => setIsMenuOpen(true)} className="lg:hidden flex items-center justify-center p-2 rounded-full border border-white/20 hover:border-accent hover:text-accent transition-all cursor-none text-white">
                                 <Menu className="w-5 h-5" />
                             </MagneticButton>
                         </div>
@@ -522,52 +385,20 @@
 
                     <AnimatePresence>
                         {isMenuOpen && (
-                            <motion.div 
-                                initial={{ opacity: 0, x: "100%" }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: "100%" }}
-                                transition={{ type: "tween", duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
-                                className="fixed inset-0 z-[60] bg-accent text-black flex flex-col justify-between p-6 md:p-12 overflow-hidden"
-                                style={{ backgroundColor: 'var(--color-accent)' }}
-                            >
+                            <motion.div initial={{ opacity: 0, x: "100%" }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: "100%" }} transition={{ type: "tween", duration: 0.5, ease: [0.76, 0, 0.24, 1] }} className="fixed inset-0 z-[60] bg-accent text-black flex flex-col justify-between p-6 md:p-12 overflow-hidden" style={{ backgroundColor: 'var(--color-accent)' }}>
                                 <div className="flex justify-between items-center border-b border-black/10 pb-6">
                                     <span className="text-xl font-bold tracking-tight">PULLUP</span>
-                                    <button onClick={() => setIsMenuOpen(false)} className="hover:rotate-90 transition-transform duration-300">
-                                        <X className="w-8 h-8 md:w-10 md:h-10" />
-                                    </button>
+                                    <button onClick={() => setIsMenuOpen(false)} className="hover:rotate-90 transition-transform duration-300"><X className="w-8 h-8 md:w-10 md:h-10" /></button>
                                 </div>
-
                                 <nav className="flex flex-col gap-2 md:gap-4 overflow-y-auto">
-                                    {[
-                                        { name: "Line-Up", id: "#events" },
-                                        { name: "Infos", id: "#infos" },
-                                        { name: "Aktuelles", id: "#aktuelles" },
-                                        { name: "Story", id: "#story" },
-                                        { name: "Merch", id: "#merch" }
-                                    ].map((item, i) => (
-                                        <motion.a 
-                                            key={item.name}
-                                            href={item.id}
-                                            initial={{ x: 100, opacity: 0 }}
-                                            animate={{ x: 0, opacity: 1 }}
-                                            transition={{ delay: 0.1 * i, duration: 0.5 }}
-                                            onClick={(e) => { 
-                                                e.preventDefault(); 
-                                                setIsMenuOpen(false);
-                                                onLinkClick(item.id, false);
-                                            }}
-                                            className="text-5xl md:text-8xl font-black uppercase tracking-tighter hover:text-white hover:translate-x-4 transition-all cursor-none w-fit block"
-                                        >
+                                    {[ { name: "Line-Up", id: "#events" }, { name: "Infos", id: "#infos" }, { name: "Aktuelles", id: "#aktuelles" }, { name: "Story", id: "#story" }, { name: "Merch", id: "#merch" } ].map((item, i) => (
+                                        <motion.a key={item.name} href={item.id} initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 * i, duration: 0.5 }} onClick={(e) => { e.preventDefault(); setIsMenuOpen(false); onLinkClick(item.id, false); }} className="text-5xl md:text-8xl font-black uppercase tracking-tighter hover:text-white hover:translate-x-4 transition-all cursor-none w-fit block">
                                             <DecryptedText text={item.name} animateOnHover={true} />
                                         </motion.a>
                                     ))}
                                 </nav>
-
                                 <div className="flex flex-col md:flex-row justify-between md:items-end text-sm md:text-base font-medium uppercase tracking-widest border-t border-black/10 pt-6 gap-4">
-                                    <div className="flex flex-col gap-1">
-                                        <span>Germany & Europe</span>
-                                        <span>est. 2019</span>
-                                    </div>
+                                    <div className="flex flex-col gap-1"><span>Germany & Europe</span><span>est. 2019</span></div>
                                     <div className="flex gap-4 md:gap-8 flex-wrap">
                                         <a href={SOCIALS.instagram} onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.instagram, true); }} className="hover:underline">Instagram</a>
                                         <a href={SOCIALS.tiktok} onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.tiktok, true); }} className="hover:underline">TikTok</a>
@@ -585,75 +416,31 @@
         const Hero = () => {
             const { scrollY } = useScroll();
             const smoothScroll = useSpring(scrollY, { stiffness: 100, damping: 20, mass: 0.5 });
-            
             const y1 = useTransform(smoothScroll, [0, 500], [0, 200]);
             const y2 = useTransform(smoothScroll, [0, 500], [0, -150]);
             const opacity = useTransform(smoothScroll, [0, 300], [1, 0]);
 
             return (
                 <section className="relative h-screen w-full flex flex-col justify-center items-center perspective-1000 overflow-hidden">
-                    <motion.div 
-                        style={{ opacity }}
-                        className="absolute inset-0 w-full h-full z-0 will-change-transform"
-                    >
+                    <motion.div style={{ opacity }} className="absolute inset-0 w-full h-full z-0 will-change-transform">
                         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-10" />
                         <div className="absolute inset-0 bg-black/40 z-10 mix-blend-multiply" />
-                        <motion.img 
-                            src="Unbenannt-80.jpg" 
-                            className="w-full h-full object-cover opacity-60 scale-105"
-                            initial={{ scale: 1.1 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }}
-                        />
+                        <motion.img src="Unbenannt-80.jpg" className="w-full h-full object-cover opacity-60 scale-105" initial={{ scale: 1.1 }} animate={{ scale: 1 }} transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }} />
                     </motion.div>
-
-                    <div 
-                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] md:w-[30vw] md:h-[30vw] opacity-10 animate-pulse pointer-events-none" 
-                        style={{
-                            background: 'radial-gradient(circle, var(--color-accent) 0%, rgba(214,208,31,0) 70%)'
-                        }}
-                    />
-
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] md:w-[30vw] md:h-[30vw] opacity-10 animate-pulse pointer-events-none" style={{ background: 'radial-gradient(circle, var(--color-accent) 0%, rgba(214,208,31,0) 70%)' }} />
                     <div className="z-10 text-center flex flex-col items-center w-full px-4">
                         <motion.div style={{ y: y1 }} className="w-full flex justify-center will-change-transform">
-                            <motion.img 
-                                src="logo.png" 
-                                alt="PULLUP" 
-                                className="w-[40%] md:w-[25%] h-auto max-w-2xl object-contain drop-shadow-[0_0_15px_rgba(214,208,31,0.3)]"
-                                initial={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
-                                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                                transition={{ duration: 1.5, ease: "easeOut" }}
-                            />
+                            <motion.img src="logo.png" alt="PULLUP" className="w-[40%] md:w-[25%] h-auto max-w-2xl object-contain drop-shadow-[0_0_15px_rgba(214,208,31,0.3)]" initial={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} transition={{ duration: 1.5, ease: "easeOut" }} />
                         </motion.div>
-                        
                         <motion.div style={{ y: y2 }} className="mt-6 md:mt-10 overflow-hidden px-4 max-w-full will-change-transform">
-                            <motion.p 
-                                initial={{ y: 50, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ duration: 1, ease: [0.76, 0, 0.24, 1], delay: 0.5 }}
-                                className="text-white/90 text-sm md:text-2xl font-bold tracking-[0.15em] md:tracking-[0.2em] uppercase max-w-lg mx-auto text-center drop-shadow-md"
-                            >
-                                Germany's Biggest <br/> 
-                                <span className="block mt-2 md:inline md:mt-0" style={{ color: '#d6d01f' }}>HipHop • Afro • Latin • Trap</span>
+                            <motion.p initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: [0.76, 0, 0.24, 1], delay: 0.5 }} className="text-white/90 text-sm md:text-2xl font-bold tracking-[0.15em] md:tracking-[0.2em] uppercase max-w-lg mx-auto text-center drop-shadow-md">
+                                Germany's Biggest <br/> <span className="block mt-2 md:inline md:mt-0 text-accent">HipHop • Afro • Latin • Trap</span>
                             </motion.p>
                         </motion.div>
                     </div>
-
-                    <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 1.5, duration: 1 }}
-                        className="absolute bottom-8 md:bottom-12 w-full px-4 md:px-8 flex justify-between items-end text-white/70 text-[10px] md:text-xs uppercase tracking-[0.2em] z-20"
-                    >
-                        <div className="flex flex-col font-bold">
-                            <span>Berlin • Hamburg • Köln</span>
-                            <span>München • Frankfurt • Wien</span>
-                        </div>
-                        
-                        <div className="absolute left-1/2 -translate-x-1/2 bottom-0 mb-1 flex flex-col items-center gap-2">
-                            <div className="animate-bounce text-accent">Scrollen ↓</div>
-                        </div>
-
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, duration: 1 }} className="absolute bottom-8 md:bottom-12 w-full px-4 md:px-8 flex justify-between items-end text-white/70 text-[10px] md:text-xs uppercase tracking-[0.2em] z-20">
+                        <div className="flex flex-col font-bold"><span>Berlin • Hamburg • Köln</span><span>München • Frankfurt • Wien</span></div>
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-0 mb-1 flex flex-col items-center gap-2"><div className="animate-bounce text-accent">Scrollen ↓</div></div>
                         <span className="font-bold">EST. 2019</span>
                     </motion.div>
                 </section>
@@ -663,19 +450,12 @@
         const Marquee = () => {
             const { scrollYProgress } = useScroll();
             const x = useTransform(scrollYProgress, [0, 1], [0, -1000]); 
-             
             return (
                 <div className="w-full py-8 md:py-12 bg-accent overflow-hidden whitespace-nowrap rotate-1 scale-105 border-y-4 border-black z-20 relative">
-                    <motion.div 
-                        className="flex gap-8 md:gap-12 items-center will-change-transform"
-                        style={{ x }}
-                    >
+                    <motion.div className="flex gap-8 md:gap-12 items-center will-change-transform" style={{ x }}>
                         {[...Array(20)].map((_, i) => (
                             <div key={i} className="flex items-center gap-8 md:gap-12 text-black font-black text-5xl md:text-8xl tracking-tighter uppercase">
-                                <span>Pullup Events</span>
-                                <Disc className="w-8 h-8 md:w-20 md:h-20 animate-spin-slow" />
-                                <span>Community First</span>
-                                <Zap className="w-8 h-8 md:w-20 md:h-20 fill-current" />
+                                <span>Pullup Events</span><Disc className="w-8 h-8 md:w-20 md:h-20 animate-spin-slow" /><span>Community First</span><Zap className="w-8 h-8 md:w-20 md:h-20 fill-current" />
                             </div>
                         ))}
                     </motion.div>
@@ -694,14 +474,10 @@
             const isLocationOnly = event.onLocationOnly;
             
             let displayStatus = event.status;
-            if (isPast) {
-                displayStatus = "SOLD OUT";
-            } else if (isLocationOnly) {
-                displayStatus = "ABENDKASSE";
-            }
+            if (isPast) displayStatus = "SOLD OUT";
+            else if (isLocationOnly) displayStatus = "ABENDKASSE";
 
             const showCountdown = event.hasCountdown && !isPast;
-
             const cardBackground = useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, rgba(255,255,255, 0.05), transparent 40%)`;
 
             useEffect(() => {
@@ -717,40 +493,21 @@
 
             const handleImageHover = () => {
                 const el = document.getElementById("displacement-map");
-                if(el) {
-                    animate(0, 50, {
-                        onUpdate: (v) => el.setAttribute("scale", v),
-                        duration: 0.5
-                    });
-                }
+                if(el) animate(0, 50, { onUpdate: (v) => el.setAttribute("scale", v), duration: 0.5 });
             };
             
             const handleImageLeave = () => {
                 const el = document.getElementById("displacement-map");
-                if(el) {
-                    animate(50, 0, {
-                        onUpdate: (v) => el.setAttribute("scale", v),
-                        duration: 0.5
-                    });
-                }
+                if(el) animate(50, 0, { onUpdate: (v) => el.setAttribute("scale", v), duration: 0.5 });
             }
 
             const isClickable = !isPast && !isLocationOnly && displayStatus !== 'AUSVERKAUFT';
             const isSoldOut = isPast || displayStatus === 'AUSVERKAUFT';
-
-            // ECHTE LOCATION: Link wird direkt im a-tag gesetzt
             const mapUrl = "https://share.google/95gzX5b2O3N3pxq73";
 
             return (
-                <motion.div 
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, margin: "-50px" }}
-                    onMouseMove={handleMouseMove}
-                    className="group relative w-full border-t border-white/20 py-12 md:py-16 cursor-none overflow-hidden"
-                >
+                <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} onMouseMove={handleMouseMove} className="group relative w-full border-t border-white/20 py-12 md:py-16 cursor-none overflow-hidden">
                     {isDesktop && <motion.div className="pointer-events-none absolute -inset-px opacity-0 transition duration-300 group-hover:opacity-100 z-0" style={{ background: cardBackground }} />}
-
                     <div className="container mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 z-10 relative">
                         <div className="flex items-start gap-6 md:gap-8 md:w-1/3">
                             <span className={`text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br font-sans tracking-tighter shrink-0 transition-colors duration-500 ${isSoldOut ? 'from-white/20 to-white/10' : 'from-[var(--color-accent)] to-white'}`}>
@@ -759,68 +516,28 @@
                             <div className="flex flex-col justify-center pt-1 md:pt-0">
                                 <span className={`text-lg md:text-2xl font-bold uppercase tracking-tight leading-none mb-1 ${isSoldOut ? 'text-white/40' : 'text-white'}`}>{event.city}</span>
                                 <span className="text-white/50 uppercase tracking-widest text-xs md:text-sm">{event.venue}</span>
-                                {event.scarcity === 'low' && !isPast && !isLocationOnly && (
-                                    <span className="mt-2 text-xs font-bold text-red-500 animate-pulse flex items-center gap-1"><AlertCircle className="w-3 h-3"/> LOW STOCK</span>
-                                )}
+                                {event.scarcity === 'low' && !isPast && !isLocationOnly && <span className="mt-2 text-xs font-bold text-red-500 animate-pulse flex items-center gap-1"><AlertCircle className="w-3 h-3"/> LOW STOCK</span>}
                             </div>
                         </div>
-
                         <div className="md:w-1/3 py-2 md:py-0 w-full">
                             {event.isSecret ? (
-                                <ScratchCard width={300} height={60}>
-                                    <span className="text-white font-black text-xl font-mono">{event.secretReveal}</span>
-                                </ScratchCard>
+                                <ScratchCard width={300} height={60}><span className="text-white font-black text-xl font-mono">{event.secretReveal}</span></ScratchCard>
                             ) : (
-                                <p className={`font-medium text-base md:text-xl font-mono leading-tight transition-colors break-words ${isSoldOut ? 'text-white/40' : 'text-white group-hover:text-accent'}`}>
-                                    {event.lineup}
-                                </p>
+                                <p className={`font-medium text-base md:text-xl font-mono leading-tight transition-colors break-words ${isSoldOut ? 'text-white/40' : 'text-white group-hover:text-accent'}`}>{event.lineup}</p>
                             )}
                             {showCountdown && <div className="mt-2"><Countdown targetDate={event.isoDate} /></div>}
                         </div>
-
                         <div className="w-full md:w-1/3 flex items-center justify-start md:justify-end gap-3 mt-4 md:mt-0">
-                            <a 
-                                href={mapUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="group/map w-12 h-12 flex items-center justify-center rounded-full border border-white/20 hover:border-white hover:bg-white hover:text-black transition-all duration-300"
-                                title="Route anzeigen"
-                            >
+                            <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="group/map w-12 h-12 flex items-center justify-center rounded-full border border-white/20 hover:border-white hover:bg-white hover:text-black transition-all duration-300" title="Route anzeigen">
                                 <MapPin className="w-5 h-5 group-hover/map:scale-110 transition-transform" />
                             </a>
-
-                            <a 
-                                href={isClickable ? SOCIALS.linktree : undefined} 
-                                onClick={(e) => { 
-                                    e.preventDefault(); 
-                                    if(isClickable) onLinkClick(SOCIALS.linktree, true); 
-                                }}
-                                className={`
-                                px-6 md:px-8 py-3 md:py-4 rounded-full uppercase font-bold tracking-wider text-xs md:text-sm transition-all duration-300 flex items-center gap-2
-                                ${isSoldOut 
-                                    ? 'bg-transparent text-white/20 border border-white/10 cursor-not-allowed' 
-                                    : isLocationOnly
-                                        ? 'bg-transparent text-white border border-white/50 cursor-default hover:border-white'
-                                        : 'bg-white text-black group-hover:bg-accent group-hover:scale-105 group-hover:pr-6 cursor-pointer'}
-                            `}>
-                                {displayStatus}
-                                {isClickable && <ArrowUpRight className="w-4 h-4" />}
+                            <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`px-6 md:px-8 py-3 md:py-4 rounded-full uppercase font-bold tracking-wider text-xs md:text-sm transition-all duration-300 flex items-center gap-2 ${isSoldOut ? 'bg-transparent text-white/20 border border-white/10 cursor-not-allowed' : isLocationOnly ? 'bg-transparent text-white border border-white/50 cursor-default hover:border-white' : 'bg-white text-black group-hover:bg-accent group-hover:scale-105 group-hover:pr-6 cursor-pointer'}`}>
+                                {displayStatus} {isClickable && <ArrowUpRight className="w-4 h-4" />}
                             </a>
                         </div>
                     </div>
-
-                    <motion.div
-                        className="hidden md:block absolute top-1/2 left-1/2 w-[300px] h-[400px] rounded-sm z-0 pointer-events-none opacity-0 group-hover:opacity-40 transition-all duration-500"
-                        style={{ translateX: "-50%", translateY: "-50%", rotate: "6deg", filter: isSoldOut ? 'grayscale(100%)' : 'none' }}
-                        onMouseEnter={handleImageHover}
-                        onMouseLeave={handleImageLeave}
-                    >
-                        <img 
-                            src={event.image} 
-                            alt={event.city}
-                            className="w-full h-full object-cover"
-                            style={{ filter: "url(#liquid-distort)" }}
-                        />
+                    <motion.div className="hidden md:block absolute top-1/2 left-1/2 w-[300px] h-[400px] rounded-sm z-0 pointer-events-none opacity-0 group-hover:opacity-40 transition-all duration-500" style={{ translateX: "-50%", translateY: "-50%", rotate: "6deg", filter: isSoldOut ? 'grayscale(100%)' : 'none' }} onMouseEnter={handleImageHover} onMouseLeave={handleImageLeave}>
+                        <img src={event.image} alt={event.city} className="w-full h-full object-cover" style={{ filter: "url(#liquid-distort)" }} />
                     </motion.div>
                 </motion.div>
             );
@@ -831,23 +548,13 @@
                 const dateA = new Date(a.isoDate);
                 const dateB = new Date(b.isoDate);
                 const now = new Date();
-                
-                const isPastA = dateA < now;
-                const isPastB = dateB < now;
-
-                if (isPastA && !isPastB) return 1;
-                if (!isPastA && isPastB) return -1;
-                
-                if (!isPastA && !isPastB) {
-                    return dateA - dateB;
-                } else {
-                    return dateB - dateA;
-                }
+                if (dateA < now && !(dateB < now)) return 1;
+                if (!(dateA < now) && dateB < now) return -1;
+                return (dateA < now && dateB < now) ? dateB - dateA : dateA - dateB;
             });
 
-            // 100K BUGFIX: Kein Padding am Ende mehr, nahtloser Übergang.
             return (
-                <section id="events" className="bg-transparent pt-20 md:pt-32 relative z-10">
+                <section id="events" className="bg-transparent pt-20 md:pt-32 pb-0 relative z-10">
                     <div className="container mx-auto px-4 mb-12 md:mb-20">
                         <div className="flex items-start gap-4 mb-4">
                              <div className="w-3 h-3 md:w-4 md:h-4 bg-accent rounded-full mt-2 md:mt-4 animate-pulse shrink-0"></div>
@@ -855,173 +562,98 @@
                                 <DecryptedText text="Kommende" /> <br className="md:hidden" /> <span className="text-stroke-white text-transparent">Nächte</span>
                             </h2>
                         </div>
-                        
                         <p className="text-white/60 text-base md:text-xl max-w-xl ml-7 md:ml-20 border-l border-accent pl-6">
                             Die heißesten Locations. Die besten Sounds. Sicher dir jetzt deinen Platz auf der Gästeliste bevor es zu spät ist.
                         </p>
                     </div>
-
                     <div className="flex flex-col">
-                        {sortedEvents.map((event) => (
-                            <EventCard key={event.id} event={event} onLinkClick={onLinkClick} />
-                        ))}
+                        {sortedEvents.map((event) => <EventCard key={event.id} event={event} onLinkClick={onLinkClick} />)}
                     </div>
                 </section>
             );
         };
 
-        /* --- 100K INFOS (THE MANIFESTO) - CLEAN REVEAL, NO SCROLL BUGS --- */
+        /* --- 100K KONZEPT 1: "LIQUID DISTORTION & THE VOID" --- */
+        /* 1. INFOS: "THE MELTING TYPE" */
         const Infos = () => {
-            const targetRef = useRef(null);
-            const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start end", "end start"] });
-            const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
-            const opacity = useTransform(scrollYProgress, [0.2, 0.5, 0.8], [0, 1, 0]);
-
             return (
-                <section id="infos" ref={targetRef} className="relative py-32 bg-black z-10 overflow-hidden border-t border-white/10">
-                    <div className="container mx-auto px-4 relative z-10 flex flex-col items-center text-center">
-                        <motion.h2 style={{ y, opacity }} className="text-[15vw] font-black uppercase tracking-tighter leading-none text-outline-transparent select-none mb-8">
-                            KULTUR
-                        </motion.h2>
-                        <div className="max-w-3xl mx-auto space-y-6">
-                            <p className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Kein VIP. Keine Absperrungen.</p>
-                            <p className="text-xl md:text-3xl font-bold uppercase tracking-widest text-accent">Nur der Pit.</p>
-                            <p className="text-white/50 text-sm md:text-base uppercase tracking-widest leading-relaxed">Wir folgen keinen Regeln. Wir bestimmen den Vibe. 100% pure Energie.</p>
+                <section id="infos" className="relative py-32 md:py-64 bg-black z-10 overflow-hidden border-t border-white/10">
+                    <div className="container mx-auto px-4 flex flex-col items-center justify-center min-h-[40vh]">
+                        {/* HIER WIRKT DER SVG DISPLACEMENT FILTER (angesteuert durch Scroll-Velocity im Wrapper) */}
+                        <div style={{ filter: 'url(#liquid-distort)' }} className="text-center will-change-transform">
+                            <h2 className="text-[12vw] md:text-[8vw] font-black uppercase tracking-tighter leading-[0.85] text-white">
+                                KEIN VIP.<br/>KEINE REGELN.
+                            </h2>
+                            <h2 className="text-[15vw] md:text-[10vw] font-black uppercase tracking-tighter leading-[0.85] text-accent mt-4">
+                                NUR DER PIT.
+                            </h2>
                         </div>
+                        <p className="mt-12 text-white/50 text-sm md:text-base uppercase tracking-widest text-center max-w-lg">
+                            Scroll schnell, um die Energie zu spüren.
+                        </p>
                     </div>
                 </section>
             );
         };
 
-        /* --- 100K AKTUELLES (THE GEO-LOCK BLUEPRINT) --- */
+        /* 2. AKTUELLES: "THE DEPTH FOCUS" (Expanding Void) */
         const News = ({ onLinkClick }) => {
-            const [coords, setCoords] = useState("51.9606° N, 7.6261° E");
-            const [locked, setLocked] = useState(false);
             const targetRef = useRef(null);
-            const isInView = useInView(targetRef, { once: true, margin: "-100px" });
-
-            useEffect(() => {
-                if (!isInView) return;
-                let interval;
-                let counter = 0;
-                interval = setInterval(() => {
-                    setCoords(`${(Math.random() * 90).toFixed(4)}° N, ${(Math.random() * 180).toFixed(4)}° E`);
-                    counter++;
-                    if (counter > 20) {
-                        clearInterval(interval);
-                        setCoords("51.9538° N, 7.6324° E"); // Approx B-Side coords
-                        setLocked(true);
-                    }
-                }, 50);
-                return () => clearInterval(interval);
-            }, [isInView]);
+            const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start end", "end end"] });
+            
+            // Der gelbe Punkt skaliert extrem, bis er den ganzen Bildschirm füllt
+            const dotScale = useTransform(scrollYProgress, [0.3, 0.6], [1, 150]);
+            const contentOpacity = useTransform(scrollYProgress, [0.6, 0.7], [0, 1]);
+            const contentY = useTransform(scrollYProgress, [0.6, 0.8], [50, 0]);
 
             return (
-                <section id="aktuelles" ref={targetRef} className="py-32 md:py-48 relative z-20 bg-black overflow-hidden border-y border-white/10">
-                    {/* Blueprint Pattern */}
-                    <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: `linear-gradient(rgba(214,208,31,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(214,208,31,0.5) 1px, transparent 1px)`, backgroundSize: '40px 40px' }}></div>
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000_80%)]"></div>
-                    
-                    <div className="container mx-auto px-4 relative z-10 flex flex-col items-center text-center font-mono">
-                        <div className="mb-8 flex items-center gap-4">
-                            <div className={`w-4 h-4 rounded-full ${locked ? 'bg-accent' : 'bg-red-500 animate-pulse'}`}></div>
-                            <span className="text-white/50 tracking-widest uppercase text-sm">TARGET ACQUISITION</span>
-                        </div>
+                <section id="aktuelles" ref={targetRef} className="relative h-[250vh] bg-black z-20">
+                    <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden bg-black">
                         
-                        <div className={`text-4xl md:text-7xl font-black mb-6 transition-colors duration-500 ${locked ? 'text-accent' : 'text-white/30'}`}>
-                            {coords}
-                        </div>
-                        
-                        <div className="h-32 flex items-center justify-center">
-                            <AnimatePresence>
-                                {locked && (
-                                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center">
-                                        <h3 className="text-xl md:text-3xl font-bold text-black uppercase tracking-tighter bg-accent px-6 py-3">HOMEBASE SECURED: B-SIDE MÜNSTER</h3>
-                                        <button onClick={(e) => { e.preventDefault(); window.open("https://share.google/95gzX5b2O3N3pxq73", "_blank"); }} className="mt-8 text-white border-b border-white pb-1 hover:text-accent hover:border-accent transition-colors uppercase tracking-widest text-sm cursor-none">INITIALIZE ROUTE</button>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    </div>
-                </section>
-            );
-        };
+                        {/* The Expanding Void / Dot */}
+                        <motion.div 
+                            style={{ scale: dotScale }}
+                            className="absolute w-[4vw] h-[4vw] md:w-8 md:h-8 rounded-full bg-accent origin-center will-change-transform z-0"
+                        />
 
-        /* --- 100K STORY (THE X-RAY SPOTLIGHT) --- */
-        const History = () => {
-            const containerRef = useRef(null);
-            const mouseX = useMotionValue(0);
-            const mouseY = useMotionValue(0);
-            const [isHovered, setIsHovered] = useState(false);
-
-            const handleMouseMove = (e) => {
-                if (!containerRef.current) return;
-                const rect = containerRef.current.getBoundingClientRect();
-                mouseX.set(e.clientX - rect.left);
-                mouseY.set(e.clientY - rect.top);
-            };
-
-            const springX = useSpring(mouseX, { stiffness: 100, damping: 20 });
-            const springY = useSpring(mouseY, { stiffness: 100, damping: 20 });
-
-            const maskImage = useMotionTemplate`radial-gradient(circle 300px at ${springX}px ${springY}px, black 0%, transparent 100%)`;
-
-            return (
-                <section id="story" className="relative py-40 md:py-64 bg-black z-10 cursor-crosshair border-b border-white/10 overflow-hidden" 
-                         ref={containerRef} 
-                         onMouseMove={handleMouseMove}
-                         onMouseEnter={() => setIsHovered(true)}
-                         onMouseLeave={() => setIsHovered(false)}>
-                    
-                    {/* Das verborgene Bild, das durch den "Spotlight" aufgedeckt wird */}
-                    <motion.div 
-                        className="absolute inset-0 z-0 bg-[url('5.jpg')] bg-cover bg-center"
-                        style={{
-                            WebkitMaskImage: isHovered ? maskImage : 'none',
-                            maskImage: isHovered ? maskImage : 'none',
-                            opacity: isHovered ? 1 : 0.05,
-                            transition: 'opacity 0.5s ease'
-                        }}
-                    >
-                        <div className="absolute inset-0 bg-accent mix-blend-color opacity-30 pointer-events-none"></div>
-                    </motion.div>
-
-                    {/* Der gigantische Text darüber */}
-                    <div className="relative z-10 container mx-auto px-4 text-center pointer-events-none">
-                        <h2 className="text-5xl md:text-[8vw] font-black uppercase tracking-tighter leading-[0.85] text-white mix-blend-difference">
-                            PULLUP IST <br/> KEIN ORT.
-                        </h2>
-                        <h2 className="text-5xl md:text-[8vw] font-black uppercase tracking-tighter leading-[0.85] text-accent mt-4">
-                            PULLUP IST <br/> EIN ZUSTAND.
-                        </h2>
-                        <p className="mt-16 text-white/50 uppercase tracking-widest text-sm animate-pulse">Nutze die Maus, um die Energie zu entdecken</p>
+                        {/* Content that fades in ON TOP of the expanded yellow background */}
+                        <motion.div 
+                            style={{ opacity: contentOpacity, y: contentY }}
+                            className="absolute inset-0 flex flex-col items-center justify-center text-black z-10 px-4"
+                        >
+                            <span className="font-mono font-bold tracking-widest uppercase mb-4 text-black/50 animate-pulse">Target Acquisition</span>
+                            <h2 className="text-[15vw] md:text-[8vw] font-black uppercase tracking-tighter leading-[0.85] text-center mb-8">
+                                HOMEBASE <br/> SECURED
+                            </h2>
+                            
+                            <div className="relative w-full max-w-3xl aspect-[16/9] md:aspect-[21/9] overflow-hidden rounded-none md:rounded-xl border-4 border-black mb-8 shadow-2xl" style={{ filter: 'url(#liquid-distort)' }}>
+                                <img src="5.jpg" className="w-full h-full object-cover grayscale opacity-80 mix-blend-multiply scale-110" alt="B-Side" />
+                                <div className="absolute inset-0 bg-accent mix-blend-color"></div>
+                                <h3 className="absolute bottom-4 left-4 text-2xl md:text-4xl font-black uppercase text-black bg-accent px-2">B-SIDE MÜNSTER</h3>
+                            </div>
+                            
+                            <MagneticButton 
+                                onClick={(e) => { e.preventDefault(); window.open("https://share.google/95gzX5b2O3N3pxq73", "_blank"); }}
+                                className="bg-black text-accent px-8 py-4 rounded-full font-black uppercase tracking-widest text-sm hover:scale-105 transition-transform cursor-none flex items-center gap-3"
+                            >
+                                <MapPin className="w-5 h-5"/> Koordinaten Laden
+                            </MagneticButton>
+                        </motion.div>
                     </div>
                 </section>
             );
         };
 
         const GalleryTicker = () => {
-            const images = [
-                "6.jpg",
-                "7.jpg",
-                "8.jpg",
-                "1.jpg", 
-                "2.jpg"
-            ];
-
+            const images = [ "6.jpg", "7.jpg", "8.jpg", "1.jpg", "2.jpg" ];
             return (
                 <section id="gallery" className="bg-black py-16 md:py-24 overflow-hidden border-t border-white/10 z-10 relative">
                     <div className="mb-8 md:mb-12 container mx-auto px-4 flex justify-between items-end">
                          <h2 className="text-white text-3xl md:text-5xl font-bold uppercase tracking-tight">Vibe Check</h2>
                          <span className="text-accent animate-pulse uppercase tracking-widest hidden md:block">Live aus dem Pit</span>
                     </div>
-                    
                     <div className="flex gap-4 w-[200vw]">
-                        <motion.div 
-                            className="flex gap-4 will-change-transform"
-                            animate={{ x: "-50%" }}
-                            transition={{ duration: 40, ease: "linear", repeat: Infinity }}
-                        >
+                        <motion.div className="flex gap-4 will-change-transform" animate={{ x: "-50%" }} transition={{ duration: 40, ease: "linear", repeat: Infinity }}>
                             {[...images, ...images, ...images].map((src, i) => (
                                 <div key={i} className="relative w-[300px] h-[350px] md:w-[400px] md:h-[500px] shrink-0 overflow-hidden rounded-md group cursor-none">
                                     <div className="absolute inset-0 bg-accent mix-blend-multiply opacity-0 group-hover:opacity-60 transition-opacity duration-300 z-10" />
@@ -1034,53 +666,36 @@
             );
         };
 
-        /* --- MERCH (THE RECEIPT) --- */
         const Merch = ({ onLinkClick }) => {
             return (
                 <section id="merch" className="py-20 md:py-32 relative z-20 px-4 bg-black flex justify-center">
                     <div className="w-full max-w-2xl bg-[#f3f4f6] text-black shadow-[0_20px_50px_rgba(255,255,255,0.05)] relative transform rotate-1 hover:rotate-0 transition-transform duration-500 z-10">
                         <div className="p-8 md:p-12 font-mono">
-                            
                             <div className="text-center border-b-2 border-black border-dashed pb-6 mb-6 relative">
                                 <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">PULLUP KOLLEKTION</h2>
                                 <p className="text-sm md:text-base font-bold mt-2">SYS_ID: 884-992-A</p>
                                 <p className="text-xs mt-1">DATUM: {new Date().toLocaleDateString('de-DE')}</p>
                             </div>
-
                             <div className="space-y-4 mb-8">
                                 <div className="flex justify-between items-end border-b border-black/20 pb-2">
-                                    <div>
-                                        <p className="font-bold text-lg">SCHWERER KAPUZENPULLI</p>
-                                        <p className="text-xs">ARTIKELNR.: PLP-H01-BLK</p>
-                                    </div>
+                                    <div><p className="font-bold text-lg">SCHWERER KAPUZENPULLI</p><p className="text-xs">ARTIKELNR.: PLP-H01-BLK</p></div>
                                     <p className="font-bold">GESPERRT</p>
                                 </div>
                                 <div className="flex justify-between items-end border-b border-black/20 pb-2">
-                                    <div>
-                                        <p className="font-bold text-lg">SIGNATURE TEE</p>
-                                        <p className="text-xs">ARTIKELNR.: PLP-T01-WHT</p>
-                                    </div>
+                                    <div><p className="font-bold text-lg">SIGNATURE TEE</p><p className="text-xs">ARTIKELNR.: PLP-T01-WHT</p></div>
                                     <p className="font-bold">GESPERRT</p>
                                 </div>
                             </div>
-
                             <div className="text-center mt-12 relative">
                                 <p className="text-sm font-bold uppercase tracking-widest mb-6 relative z-10">*** DROP 01 IN PRODUKTION ***<br/>EXKLUSIV FÜR COMMUNITY MITGLIEDER</p>
-                                
-                                <MagneticButton 
-                                    onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.whatsapp, true); }}
-                                    className="bg-black text-white w-full py-4 text-center cursor-none group relative overflow-hidden"
-                                >
+                                <MagneticButton onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.whatsapp, true); }} className="bg-black text-white w-full py-4 text-center cursor-none group relative overflow-hidden">
                                     <div className="absolute inset-0 bg-accent transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
                                     <div className="flex justify-center items-center h-12 mb-2 px-4 opacity-50 group-hover:opacity-100 transition-opacity relative z-10 mix-blend-difference">
-                                        {[...Array(30)].map((_, i) => (
-                                            <div key={i} className="bg-white h-full" style={{ width: `${Math.random() * 4 + 1}px`, marginRight: `${Math.random() * 3 + 1}px` }}></div>
-                                        ))}
+                                        {[...Array(30)].map((_, i) => (<div key={i} className="bg-white h-full" style={{ width: `${Math.random() * 4 + 1}px`, marginRight: `${Math.random() * 3 + 1}px` }}></div>))}
                                     </div>
                                     <span className="font-bold uppercase tracking-widest text-sm relative z-10 mix-blend-difference">ZUR WARTELISTE</span>
                                 </MagneticButton>
                             </div>
-
                             <div className="text-center text-xs mt-8 opacity-50 relative">
                                 <p>KEINE RÜCKGABEN. KEIN RESTOCK.</p>
                                 <p>DANKE FÜR DEN SUPPORT.</p>
@@ -1096,60 +711,38 @@
             return (
                 <footer id="contact" className="bg-accent text-black pt-20 md:pt-32 pb-8 md:pb-12 rounded-t-[2rem] md:rounded-t-[3rem] relative z-20 -mt-10 overflow-hidden">
                     <div className="container mx-auto px-6 md:px-12 flex flex-col justify-between min-h-[50vh] md:min-h-[60vh] relative z-10">
-                        
                         <div className="grid md:grid-cols-2 gap-12">
                             <div>
                                 <h3 className="text-2xl md:text-3xl font-black mb-6 uppercase tracking-wider">Bleib Updated</h3>
                                 <form className="flex border-b-2 border-black pb-4">
                                     <input type="email" placeholder="DEINE EMAIL ADRESSE" className="bg-transparent w-full text-lg md:text-xl placeholder-black/50 focus:outline-none uppercase font-bold text-black selection-accent" />
-                                    <button className="hover:scale-125 transition-transform text-black" type="button">
-                                        <ArrowRight className="w-6 h-6 md:w-8 md:h-8" />
-                                    </button>
+                                    <button className="hover:scale-125 transition-transform text-black" type="button"><ArrowRight className="w-6 h-6 md:w-8 md:h-8" /></button>
                                 </form>
                                 <p className="mt-4 text-xs md:text-sm font-bold opacity-60 uppercase tracking-wide">Erfahre als Erster von Secret Locations und neuen Drops.</p>
                             </div>
-
                             <div className="grid grid-cols-2 gap-8 text-lg md:text-xl font-black uppercase tracking-tight">
                                 <ul className="space-y-3">
-                                    <li><a href="#events" onClick={(e) => { e.preventDefault(); onLinkClick("#events", false); }} className="hover:text-white transition-colors cursor-none"><DecryptedText text="Events" animateOnHover={true} /></a></li>
-                                    <li><a href={SOCIALS.instagram} onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.instagram, true); }} className="hover:text-white transition-colors cursor-none"><DecryptedText text="Artists" animateOnHover={true} /></a></li>
-                                    <li><a href="#gallery" onClick={(e) => { e.preventDefault(); onLinkClick("#gallery", false); }} className="hover:text-white transition-colors cursor-none"><DecryptedText text="Gallery" animateOnHover={true} /></a></li>
+                                    <li><a href="#events" onClick={(e) => { e.preventDefault(); onLinkClick("#events", false); }} className="hover:text-black/70 transition-colors cursor-none"><DecryptedText text="Events" animateOnHover={true} /></a></li>
+                                    <li><a href={SOCIALS.instagram} onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.instagram, true); }} className="hover:text-black/70 transition-colors cursor-none"><DecryptedText text="Artists" animateOnHover={true} /></a></li>
+                                    <li><a href="#gallery" onClick={(e) => { e.preventDefault(); onLinkClick("#gallery", false); }} className="hover:text-black/70 transition-colors cursor-none"><DecryptedText text="Gallery" animateOnHover={true} /></a></li>
                                 </ul>
-                                
                                 <div className="flex flex-col gap-4">
                                     <span className="text-sm font-bold opacity-60 uppercase tracking-wide">Connect</span>
                                     <div className="flex gap-4">
-                                        <a href={SOCIALS.instagram} onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.instagram, true); }} className="hover:text-white transition-colors hover:scale-110 duration-200 cursor-none">
-                                            <Instagram className="w-8 h-8" />
-                                        </a>
-                                        <a href={SOCIALS.tiktok} onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.tiktok, true); }} className="hover:text-white transition-colors hover:scale-110 duration-200 cursor-none">
-                                            <svg className="w-8 h-8 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.329 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z"/></svg>
-                                        </a>
-                                        <a href={SOCIALS.youtube} onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.youtube, true); }} className="hover:text-white transition-colors hover:scale-110 duration-200 cursor-none">
-                                            <Youtube className="w-8 h-8" />
-                                        </a>
-                                        <a href={SOCIALS.whatsapp} onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.whatsapp, true); }} className="hover:text-white transition-colors hover:scale-110 duration-200 cursor-none">
-                                             <svg className="w-8 h-8 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-                                        </a>
+                                        <a href={SOCIALS.instagram} onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.instagram, true); }} className="hover:text-black/70 transition-colors hover:scale-110 duration-200 cursor-none"><Instagram className="w-8 h-8" /></a>
+                                        <a href={SOCIALS.tiktok} onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.tiktok, true); }} className="hover:text-black/70 transition-colors hover:scale-110 duration-200 cursor-none"><svg className="w-8 h-8 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.329 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z"/></svg></a>
+                                        <a href={SOCIALS.youtube} onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.youtube, true); }} className="hover:text-black/70 transition-colors hover:scale-110 duration-200 cursor-none"><Youtube className="w-8 h-8" /></a>
+                                        <a href={SOCIALS.whatsapp} onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.whatsapp, true); }} className="hover:text-black/70 transition-colors hover:scale-110 duration-200 cursor-none"><svg className="w-8 h-8 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg></a>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div className="mt-16 md:mt-24">
-                            <h2 className="text-[15vw] md:text-[18vw] leading-[0.8] font-black tracking-tighter text-center md:text-left select-none pointer-events-none opacity-90">
-                                PULLUP
-                            </h2>
-                            
+                            <h2 className="text-[15vw] md:text-[18vw] leading-[0.8] font-black tracking-tighter text-center md:text-left select-none pointer-events-none opacity-90">PULLUP</h2>
                             <div className="flex flex-row justify-between items-center mt-8 text-[10px] md:text-sm uppercase font-bold tracking-widest w-full">
                                 <span className="shrink-0">© 2025 PULLUP ORG.</span>
-                                
-                                <img 
-                                    src="PoweredbyWestroomz.png" 
-                                    alt="Powered by Westroomz" 
-                                    className="h-16 md:h-32 w-auto object-contain mx-2 transition-opacity"
-                                />
-
+                                <img src="PoweredbyWestroomz.png" alt="Powered by Westroomz" className="h-16 md:h-32 w-auto object-contain mx-2 transition-opacity" />
                                 <span className="shrink-0">EST. 2019</span>
                             </div>
                         </div>
@@ -1161,23 +754,28 @@
         const LiquidScrollWrapper = ({ children }) => {
             const { scrollY } = useScroll();
             const scrollVelocity = useVelocity(scrollY);
-            const smoothVelocity = useSpring(scrollVelocity, {
-                damping: 50,
-                stiffness: 400
-            });
+            const smoothVelocity = useSpring(scrollVelocity, { damping: 50, stiffness: 400 });
             const skewVelocity = useTransform(smoothVelocity, [-1000, 1000], [-0.5, 0.5]); 
             const scaleVelocity = useTransform(smoothVelocity, [-1000, 1000], [1, 0.995]);
-            
             const [isDesktop, setIsDesktop] = useState(false);
 
             useEffect(() => {
                 const hasFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
                 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                
-                if (hasFinePointer && !prefersReducedMotion) {
-                    setIsDesktop(true);
-                }
+                if (hasFinePointer && !prefersReducedMotion) setIsDesktop(true);
             }, []);
+
+            // HIER PASSIERT DIE MAGIE: Der Displacement-Filter reagiert auf Scroll-Speed
+            useAnimationFrame(() => {
+                if (!isDesktop) return;
+                const vel = Math.abs(smoothVelocity.get());
+                // Map velocity to a scale value for the SVG filter
+                const mappedScale = Math.min(vel * 0.04, 150); 
+                const el = document.getElementById("displacement-map");
+                if (el) {
+                    el.setAttribute("scale", mappedScale > 1 ? mappedScale : 0);
+                }
+            });
 
             if (!isDesktop) return <>{children}</>;
 
@@ -1232,7 +830,6 @@
                                 <Events onLinkClick={handleLinkClick} />
                                 <Infos />
                                 <News onLinkClick={handleLinkClick} />
-                                <History />
                                 <GalleryTicker />
                                 <Merch onLinkClick={handleLinkClick} />
                                 <Footer onLinkClick={handleLinkClick} />
