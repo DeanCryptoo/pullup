@@ -70,26 +70,9 @@
             -webkit-text-stroke: 2px rgba(255,255,255,0.15);
         }
 
-        .preserve-3d {
-            transform-style: preserve-3d;
-        }
-        .perspective-container {
-            perspective: 1500px;
-        }
-
-        @keyframes spin-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .animate-spin-slow {
-            animation: spin-slow 8s linear infinite;
-        }
-
-        .gpu-accelerated {
-            transform: translateZ(0);
-            backface-visibility: hidden;
-            perspective: 1000px;
-            will-change: transform;
+        .will-change-transform {
+            will-change: transform, opacity;
+            transform: translateZ(0); /* Hardware Acceleration */
         }
         
         .receipt-edge {
@@ -103,7 +86,6 @@
             height: 32px;
         }
 
-        /* Utility für vertikalen Text im Line-Up Accordion (nur Desktop) */
         .writing-vertical {
             writing-mode: vertical-rl;
             text-orientation: mixed;
@@ -122,7 +104,7 @@
         import React, { useState, useEffect, useRef, useCallback } from 'https://esm.sh/react@18.2.0?dev';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client?dev&deps=react@18.2.0';
         import { motion, useScroll, useTransform, useSpring, AnimatePresence, useMotionValue, useMotionTemplate, useVelocity, useAnimationFrame, animate, useInView } from 'https://esm.sh/framer-motion@10.16.4?dev&deps=react@18.2.0,react-dom@18.2.0';
-        import { ArrowRight, MapPin, Calendar, Music, Instagram, Mail, Menu, X, Disc, Zap, ArrowUpRight, Youtube, MessageCircle, Clock, AlertCircle, Navigation, Terminal } from 'https://esm.sh/lucide-react@0.292.0?dev&deps=react@18.2.0';
+        import { ArrowRight, MapPin, Calendar, Music, Instagram, Mail, Menu, X, Disc, Zap, ArrowUpRight, Youtube, MessageCircle, Clock, AlertCircle, Navigation, Terminal, Crosshair } from 'https://esm.sh/lucide-react@0.292.0?dev&deps=react@18.2.0';
 
         const SOCIALS = {
             instagram: "https://www.instagram.com/pullup_ofc/",
@@ -132,30 +114,33 @@
             linktree: "https://linktr.ee/pullup_ofc"
         };
 
+        // 100K UPDATE: MÜNSTER ONLY & ROUTING URL
+        const MUESTER_MAP_URL = "https://www.google.com/maps/dir/?api=1&destination=B-Side+Kultur+e.V.,+Am+Mittelhafen+42,+48155+Münster";
+
         const EVENTS = [
             {
                 id: 1,
-                city: "BERLIN",
-                venue: "Kraftwerk",
-                date: "24. OKT",
-                isoDate: "2025-10-24T22:00:00",
-                lineup: "DJ EZ • SKEPTA • PULLUP SOUNDSYSTEM",
+                dateLabel: "04. JULI", // Für den Inaktiv-Tab
+                city: "MÜNSTER",       // Für den Aktiv-Tab
+                venue: "B-Side Club",
+                isoDate: "2026-07-04T23:00:00",
+                lineup: "SUMMER OPENING • PULLUP SOUNDSYSTEM • SURPRISE ACT",
                 image: "1.jpg", 
                 status: "TICKETS",
                 scarcity: "available",
                 artists: [
-                    { name: "DJ EZ", image: "1.jpg" }, 
-                    { name: "SKEPTA", image: "2.jpg" },
-                    { name: "PULLUP SOUNDS.", image: "3.jpg" },
-                    { name: "SURPRISE GUEST", image: "4.jpg" }
+                    { name: "PULLUP SOUNDS.", image: "1.jpg" }, 
+                    { name: "SUMMER GUEST", image: "2.jpg" },
+                    { name: "RESIDENTS", image: "3.jpg" },
+                    { name: "SPECIAL ACT", image: "4.jpg" }
                 ]
             },
             {
                 id: 2,
+                dateLabel: "15. AUG",
                 city: "MÜNSTER",
-                venue: "B-Side",
-                date: "08. NOV",
-                isoDate: "2025-11-08T23:00:00",
+                venue: "B-Side Club",
+                isoDate: "2026-08-15T23:00:00",
                 lineup: "AJ TRACEY • OG KEEMO • SOULECTION",
                 image: "2.jpg",
                 status: "TICKETS",
@@ -169,10 +154,10 @@
             },
             {
                 id: 3,
-                city: "KÖLN",
-                venue: "Bootshaus",
-                date: "15. DEZ",
-                isoDate: "2025-12-15T22:00:00",
+                dateLabel: "12. SEPT",
+                city: "MÜNSTER",
+                venue: "B-Side Club",
+                isoDate: "2026-09-12T22:00:00",
                 lineup: "METRO BOOMIN • LUCIANO • PULLUP RESIDENTS",
                 image: "3.jpg",
                 status: "TICKETS",
@@ -185,10 +170,10 @@
             },
             {
                 id: 4,
-                city: "MÜNCHEN",
-                venue: "Blitz Club",
-                date: "31. DEZ",
-                isoDate: "2025-12-31T23:59:00",
+                dateLabel: "31. DEZ",
+                city: "MÜNSTER",
+                venue: "B-Side Club",
+                isoDate: "2026-12-31T23:59:00",
                 lineup: "NYE SPECIAL • TRAVIS SCOTT (LIVE)",
                 image: "4.jpg",
                 status: "TICKETS",
@@ -429,7 +414,7 @@
                         </motion.div>
                     </div>
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, duration: 1 }} className="absolute bottom-8 md:bottom-12 w-full px-4 md:px-8 flex justify-between items-end text-white/70 text-[10px] md:text-xs uppercase tracking-[0.2em] z-20">
-                        <div className="flex flex-col font-bold"><span>Berlin • Hamburg • Köln</span><span>München • Frankfurt • Wien</span></div>
+                        <div className="flex flex-col font-bold"><span>Münster • Homebase</span></div>
                         <div className="absolute left-1/2 -translate-x-1/2 bottom-0 mb-1 flex flex-col items-center gap-2"><div className="animate-bounce text-accent">Scrollen ↓</div></div>
                         <span className="font-bold">EST. 2019</span>
                     </motion.div>
@@ -484,7 +469,6 @@
 
             const getSlotProps = (slotIndex) => {
                 if (isMobile) {
-                    // MOBILE: 9:16 Cards require larger x-offsets so they don't overlap too much
                     switch (slotIndex) {
                         case 0: return { x: "-45vw", y: "0vh", scale: 0.8, opacity: 0.6, zIndex: 5, filter: "blur(1px)" };
                         case 1: return { x: "0vw", y: "0vh", scale: 1, opacity: 1, zIndex: 10, filter: "blur(0px)" };
@@ -517,19 +501,11 @@
                         else if (artistIdx === prevIndex) position = 0; 
                         else if (artistIdx === nextIndex) position = 2; 
 
-                        // Startposition außerhalb des Bildschirms berechnen
-                        let startX;
-                        if (isMobile) {
-                            startX = position === 0 ? "-60vw" : "60vw";
-                        } else {
-                            startX = position === 0 ? "-40vw" : "40vw";
-                        }
-
+                        let startX = isMobile ? (position === 0 ? "-60vw" : "60vw") : (position === 0 ? "-40vw" : "40vw");
                         const props = position !== -1 
                             ? getSlotProps(position) 
                             : { x: startX, y: "5vh", scale: 0.5, opacity: 0, zIndex: 0 };
 
-                        // 100K FIX: Mobile Carousel ist jetzt aspect-[9/16] und deutlich breiter/höher (55vw)
                         const cardSize = isMobile ? "w-[55vw] aspect-[9/16]" : "w-[22vw] aspect-[4/5]";
 
                         return (
@@ -566,15 +542,6 @@
                 return () => window.removeEventListener('resize', checkMobile);
             }, []);
 
-            const sortedEvents = [...EVENTS].sort((a, b) => {
-                const dateA = new Date(a.isoDate);
-                const dateB = new Date(b.isoDate);
-                const now = new Date();
-                if (dateA < now && !(dateB < now)) return 1;
-                if (!(dateA < now) && dateB < now) return -1;
-                return (dateA < now && dateB < now) ? dateB - dateA : dateA - dateB;
-            });
-
             return (
                 <section id="events" className="bg-transparent pt-20 md:pt-32 pb-10 relative z-10">
                     <div className="container mx-auto px-4 mb-8 md:mb-12">
@@ -587,7 +554,7 @@
                     </div>
 
                     <div className="w-full h-[85vh] md:h-[70vh] flex flex-col md:flex-row px-2 md:px-4 gap-2 md:gap-2">
-                        {sortedEvents.map((event) => {
+                        {EVENTS.map((event) => {
                             const isActive = activeEvent === event.id;
                             
                             const eventDate = new Date(event.isoDate);
@@ -600,7 +567,6 @@
                             else if (isLocationOnly) displayStatus = "ABENDKASSE";
 
                             const isClickable = !isPast && !isLocationOnly && displayStatus !== 'AUSVERKAUFT';
-                            const mapUrl = "https://share.google/95gzX5b2O3N3pxq73"; 
 
                             const activeClass = isMobile ? 'w-full h-[78%]' : 'w-[80%] h-full';
                             const inactiveClass = isMobile ? 'w-full h-[7%]' : 'w-[6%] h-full';
@@ -632,26 +598,27 @@
                                                 className="absolute inset-0 p-5 md:p-12 z-10 flex flex-col justify-between overflow-hidden pointer-events-none"
                                             >
                                                 <div className="flex justify-between items-start relative z-20 pointer-events-auto">
+                                                    {/* Auf Desktop und Mobile: Date */}
                                                     <span className="text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 tracking-tighter drop-shadow-2xl">
-                                                        {event.date}
+                                                        {event.dateLabel}
                                                     </span>
                                                     {event.scarcity === 'low' && !isPast && !isLocationOnly && (
                                                         <span className="bg-red-600 text-white px-2 py-1 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase animate-pulse">Low Stock</span>
                                                     )}
                                                 </div>
 
-                                                {/* 100K FIX: Karussell nimmt auf Mobile jetzt mehr vertikalen Platz ein (top-15% bis bottom-25%) */}
-                                                <ArtistCarousel artists={event.artists} isMobile={isMobile} className="top-[15%] bottom-[25%] md:top-[15%] md:bottom-1/4 pointer-events-auto" />
+                                                <ArtistCarousel artists={event.artists} isMobile={isMobile} className="top-[25%] md:top-[15%] bottom-[35%] md:bottom-1/4 pointer-events-auto" />
 
                                                 <div className="relative z-20 flex flex-col md:flex-row justify-between items-start md:items-end gap-3 md:gap-6 mt-auto pointer-events-auto">
                                                     <div className="flex flex-col">
+                                                        {/* MÜNSTER is huge when active */}
                                                         <h3 className="text-4xl md:text-6xl font-black uppercase text-white tracking-tighter mb-0 md:mb-2 drop-shadow-lg">{event.city}</h3>
                                                         <span className="text-accent uppercase tracking-widest text-xs md:text-base font-bold mb-2 md:mb-4 drop-shadow-md">{event.venue}</span>
                                                         <p className="font-mono text-[10px] md:text-lg text-white/80 max-w-lg bg-black/60 backdrop-blur-sm p-2 rounded-lg border border-white/10 hidden md:block">{event.lineup}</p>
                                                     </div>
                                                     
                                                     <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto mt-1 md:mt-0">
-                                                        <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="w-12 h-12 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
+                                                        <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
                                                             <MapPin className="w-5 h-5 md:w-5 md:h-5" />
                                                         </a>
                                                         <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`flex-1 md:flex-none px-4 md:px-10 py-4 md:py-4 rounded-full uppercase font-black tracking-widest text-[12px] md:text-sm transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-black/60 backdrop-blur-sm text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
@@ -663,15 +630,17 @@
                                         )}
                                     </AnimatePresence>
 
+                                    {/* Desktop Inaktiver Text (Datum vertikal) */}
                                     <div className={`hidden md:flex absolute inset-0 items-center justify-center pointer-events-none transition-opacity duration-300 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
                                         <span className="writing-vertical text-3xl font-black uppercase tracking-widest text-white/50 whitespace-nowrap">
-                                            {event.city}
+                                            {event.dateLabel}
                                         </span>
                                     </div>
 
+                                    {/* Mobile Inaktiver Text (Datum horizontal) */}
                                     <div className={`md:hidden absolute inset-0 flex items-center justify-center px-6 pointer-events-none transition-opacity duration-300 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
                                         <span className="text-xl font-black uppercase tracking-widest text-white/70 whitespace-nowrap">
-                                            {event.city}
+                                            {event.dateLabel}
                                         </span>
                                     </div>
                                 </motion.div>
@@ -723,47 +692,71 @@
             );
         };
 
-        /* 2. AKTUELLES: "THE SHATTERING PULLUP LOGO" */
+        /* 2. AKTUELLES: "THE VAULT" (100K REDESIGN) */
         const News = ({ onLinkClick }) => {
             const targetRef = useRef(null);
-            const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start 60%", "center center"] });
-            const breakProgress = useTransform(scrollYProgress, [0, 1], [0, 1]);
+            // offset "start start" -> the animation starts exactly when the section hits the top of viewport
+            const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
             
+            // Die Tresortüren (Logo Hälften) sliden zur Seite
+            const leftX = useTransform(scrollYProgress, [0, 0.4], ["0%", "-100%"]);
+            const rightX = useTransform(scrollYProgress, [0, 0.4], ["0%", "100%"]);
+            const doorsOpacity = useTransform(scrollYProgress, [0.3, 0.4], [1, 0]);
+
+            // Der Cinematic Content dahinter skaliert rein
+            const contentScale = useTransform(scrollYProgress, [0, 0.5], [0.8, 1]);
+            const contentOpacity = useTransform(scrollYProgress, [0.1, 0.4], [0, 1]);
+
             return (
-                <section id="aktuelles" ref={targetRef} className="relative h-[200vh] bg-[#050505] z-20 border-y border-white/5">
-                    <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden perspective-container">
+                <section id="aktuelles" ref={targetRef} className="relative h-[200vh] bg-black z-20 border-y border-white/5">
+                    <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden bg-black">
                         
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-accent text-black p-4 z-0">
-                            <span className="font-mono font-bold tracking-widest uppercase mb-4 animate-pulse border border-black px-4 py-1">+++ SYSTEM OVERRIDE +++</span>
-                            <h2 className="text-[15vw] md:text-[10vw] font-black uppercase tracking-tighter leading-[0.85] text-center mb-12 text-black mix-blend-overlay">
-                                B-SIDE <br/> MÜNSTER
-                            </h2>
-                            <MagneticButton onClick={(e) => { e.preventDefault(); window.open("https://share.google/95gzX5b2O3N3pxq73", "_blank"); }} className="bg-black text-accent px-10 py-5 rounded-full font-black uppercase tracking-widest text-sm hover:scale-105 transition-transform cursor-none flex items-center gap-3 shadow-2xl">
-                                <MapPin className="w-5 h-5"/> KOORDINATEN BESTÄTIGT
-                            </MagneticButton>
-                        </div>
+                        {/* THE CINEMATIC CONTROL ROOM (Background) */}
+                        <motion.div 
+                            style={{ scale: contentScale, opacity: contentOpacity }}
+                            className="absolute inset-0 flex flex-col items-center justify-center text-white z-0 will-change-transform"
+                        >
+                            {/* Gritty Background Image */}
+                            <div className="absolute inset-0 bg-[url('5.jpg')] bg-cover bg-center opacity-30 mix-blend-luminosity"></div>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black"></div>
+                            
+                            <div className="relative z-10 text-center px-4 flex flex-col items-center">
+                                <div className="inline-flex items-center gap-2 border border-accent/50 text-accent px-4 py-1.5 rounded-full text-xs tracking-widest font-mono mb-6 bg-black/50 backdrop-blur-sm">
+                                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
+                                    LOCATION VERIFIED
+                                </div>
+                                <h2 className="text-6xl md:text-[8vw] font-black uppercase tracking-tighter mb-2 leading-none drop-shadow-2xl">B-SIDE</h2>
+                                <h2 className="text-4xl md:text-[5vw] font-black uppercase tracking-widest text-white/50 mb-8 leading-none">MÜNSTER</h2>
+                                
+                                <p className="text-white/60 tracking-widest font-mono text-xs md:text-sm max-w-md mx-auto mb-10 bg-black/40 p-4 rounded-md border border-white/5">
+                                    Der einzige Ort, an dem Regeln keine Rolle spielen. Wir übernehmen das komplette Areal.
+                                </p>
+                                
+                                <MagneticButton onClick={(e) => { e.preventDefault(); window.open(MUESTER_MAP_URL, "_blank"); }} className="bg-accent text-black px-10 py-5 rounded-full font-black uppercase tracking-widest text-sm hover:scale-105 transition-transform cursor-none flex items-center gap-3 shadow-[0_0_30px_rgba(214,208,31,0.3)]">
+                                    <Crosshair className="w-5 h-5"/> ROUTE STARTEN
+                                </MagneticButton>
+                            </div>
+                        </motion.div>
 
-                        <div className="absolute inset-0 z-10 flex w-full h-full pointer-events-none">
-                            {[...Array(5)].map((_, i) => {
-                                const ySign = i % 2 === 0 ? -1 : 1;
-                                const moveY = useTransform(breakProgress, [0, 1], [0, ySign * (300 + i * 100)]);
-                                const moveZ = useTransform(breakProgress, [0, 1], [0, 500 + i * 200]);
-                                const rotX = useTransform(breakProgress, [0, 1], [0, ySign * 45]);
-                                const rotY = useTransform(breakProgress, [0, 1], [0, (i - 2) * 30]);
-                                const opacity = useTransform(breakProgress, [0.7, 1], [1, 0]);
-
-                                return (
-                                    <motion.div 
-                                        key={i}
-                                        className="h-full relative overflow-hidden preserve-3d"
-                                        style={{ width: '20%', y: moveY, z: moveZ, rotateX: rotX, rotateY: rotY, opacity: opacity }}
-                                    >
-                                        <div className="absolute top-0 h-full w-[100vw] bg-black flex items-center justify-center border-r border-white/5" style={{ left: `-${i * 20}vw` }}>
-                                            <img src="logo.png" className="w-[80vw] md:w-[40vw] max-w-2xl object-contain opacity-90 drop-shadow-[0_0_20px_rgba(214,208,31,0.2)]" alt="PULLUP Split" />
-                                        </div>
-                                    </motion.div>
-                                );
-                            })}
+                        {/* THE VAULT DOORS (Foreground Logo Split) */}
+                        <div className="absolute inset-0 z-10 flex pointer-events-none">
+                            {/* Left Half */}
+                            <motion.div style={{ x: leftX, opacity: doorsOpacity }} className="w-1/2 h-full bg-black overflow-hidden relative will-change-transform">
+                                <div className="absolute top-0 left-0 w-[100vw] h-full flex items-center justify-center">
+                                    <img src="logo.png" className="w-[80vw] md:w-[40vw] max-w-2xl object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]" alt="Logo Left" />
+                                </div>
+                                {/* Center slit glow */}
+                                <div className="absolute right-0 top-0 bottom-0 w-[1px] bg-accent/20 shadow-[0_0_10px_rgba(214,208,31,0.5)]"></div>
+                            </motion.div>
+                            
+                            {/* Right Half */}
+                            <motion.div style={{ x: rightX, opacity: doorsOpacity }} className="w-1/2 h-full bg-black overflow-hidden relative will-change-transform">
+                                <div className="absolute top-0 right-0 w-[100vw] h-full flex items-center justify-center">
+                                    <img src="logo.png" className="w-[80vw] md:w-[40vw] max-w-2xl object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]" alt="Logo Right" />
+                                </div>
+                                {/* Center slit glow */}
+                                <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-accent/20 shadow-[0_0_10px_rgba(214,208,31,0.5)]"></div>
+                            </motion.div>
                         </div>
                         
                     </div>
@@ -771,7 +764,7 @@
             );
         };
 
-        /* 3. STORY: "THE HORIZONTAL REEL" */
+        /* 3. STORY: "THE HORIZONTAL REEL" (Mobile Performance Fix) */
         const Story = () => {
             const targetRef = useRef(null);
             const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
@@ -785,13 +778,15 @@
                             <h2 className="text-[30vw] font-black uppercase tracking-tighter select-none">ENERGY</h2>
                         </div>
                         
+                        {/* 100K FIX: will-change-transform erzwingt GPU Rendering auf Mobile für flüssiges Scrollen */}
                         <motion.div style={{ x }} className="flex w-[300vw] h-full items-center will-change-transform">
                             
                             <div className="w-[100vw] h-full flex flex-col justify-center px-10 md:px-24 relative z-10">
                                 <h3 className="text-accent text-xs md:text-sm tracking-widest font-mono mb-4 uppercase">Kapitel 01</h3>
                                 <h2 className="text-5xl md:text-[6vw] font-black uppercase mb-8 leading-[0.85] tracking-tighter">Mehr als<br/>eine Party.</h2>
                                 <div className="relative w-[85vw] md:w-[60vw] aspect-[16/9] md:aspect-[21/9] overflow-hidden group">
-                                    <img src="6.jpg" className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" alt="Story 1" />
+                                    {/* Mobile Fix: Blur-Transitions reduziert */}
+                                    <img src="6.jpg" className="w-full h-full object-cover grayscale md:opacity-60 md:group-hover:grayscale-0 md:group-hover:opacity-100 transition-all duration-700 md:group-hover:scale-105" alt="Story 1" />
                                 </div>
                             </div>
 
@@ -799,7 +794,7 @@
                                 <h3 className="text-accent text-xs md:text-sm tracking-widest font-mono mb-4 uppercase">Kapitel 02</h3>
                                 <h2 className="text-5xl md:text-[6vw] font-black uppercase mb-8 leading-[0.85] tracking-tighter">Kultur<br/>gestalten.</h2>
                                 <div className="relative w-[85vw] md:w-[60vw] aspect-[16/9] md:aspect-[21/9] overflow-hidden group">
-                                    <img src="7.jpg" className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" alt="Story 2" />
+                                    <img src="7.jpg" className="w-full h-full object-cover grayscale md:opacity-60 md:group-hover:grayscale-0 md:group-hover:opacity-100 transition-all duration-700 md:group-hover:scale-105" alt="Story 2" />
                                 </div>
                             </div>
 
