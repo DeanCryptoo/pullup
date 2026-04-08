@@ -714,6 +714,7 @@
             );
         };
 
+        /* 2. AKTUELLES: "THE VAULT" */
         const News = () => {
             const targetRef = useRef(null);
             const isInView = useInView(targetRef, { amount: 0.7, once: false });
@@ -782,6 +783,7 @@
             );
         };
 
+        /* 3. STORY: "THE HORIZONTAL REEL" */
         const Story = () => {
             const targetRef = useRef(null);
             const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
@@ -860,19 +862,19 @@
             return (
                 <section id="merch" ref={targetRef} className="pt-16 pb-32 md:pt-32 md:pb-48 relative z-20 px-4 bg-black flex justify-center overflow-visible perspective-container">
                     
-                    {/* DAS ECHTE KNÖLLCHEN-UNFOLDING */}
+                    {/* DAS "SLAM ON TABLE" FIX */}
                     <motion.div 
-                        initial={{ scaleX: 0, scaleY: 0, rotateZ: -180, borderRadius: "50%", opacity: 0 }}
+                        initial={{ y: -200, scale: 1.5, rotateZ: 15, rotateX: 20, opacity: 0 }}
                         animate={isInView ? { 
-                            scaleX: [0, 0.15, 0.25, 1.05, 1], 
-                            scaleY: [0, 0.1, 1.05, 1.02, 1], 
-                            rotateZ: [-180, -90, -20, 2, -2], 
-                            borderRadius: ["50%", "40%", "10%", "2%", "0%"],
-                            opacity: [0, 1, 1, 1, 1] 
+                            y: 0, 
+                            scale: 1, 
+                            rotateZ: -2, 
+                            rotateX: 0, 
+                            opacity: 1 
                         } : { 
-                            scaleX: 0, scaleY: 0, rotateZ: -180, borderRadius: "50%", opacity: 0 
+                            y: -200, scale: 1.5, rotateZ: 15, rotateX: 20, opacity: 0 
                         }}
-                        transition={{ duration: 1.2, ease: "easeOut", times: [0, 0.15, 0.45, 0.8, 1] }}
+                        transition={{ type: "spring", stiffness: 150, damping: 12, delay: 0.1 }}
                         className="w-full max-w-2xl text-black relative z-10 receipt-crumpled gpu-accelerated"
                         style={{ transformOrigin: "center center" }}
                     >
@@ -1016,4 +1018,3 @@
     </script>
 </body>
 </html>
-
