@@ -714,7 +714,7 @@
             );
         };
 
-        /* 2. AKTUELLES: "THE VAULT" */
+        /* 2. AKTUELLES: "THE VAULT" (100K PERFECT TIMING & GPU FIX) */
         const News = () => {
             const targetRef = useRef(null);
             const isInView = useInView(targetRef, { amount: 0.7, once: false });
@@ -783,12 +783,17 @@
             );
         };
 
-        /* 3. STORY: "THE HORIZONTAL REEL" */
+        /* 3. STORY: "THE HORIZONTAL REEL" (SMOOTH SPRING PHYSICS + SCROLL LOCK) */
         const Story = () => {
             const targetRef = useRef(null);
             const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
             
+            // 100K FIX: Der physikalische Stoßdämpfer ist zurück! 
+            // Er glättet das Scrollen des Daumens, damit es nicht mehr laggt.
             const smoothProgress = useSpring(scrollYProgress, { stiffness: 50, damping: 20, mass: 0.5 });
+            
+            // 100K FIX 2: Der "Scroll-Lock". Die Kamerafahrt stoppt bei 80% des Weges, 
+            // damit das 3. Bild kurz stehen bleibt.
             const x = useTransform(smoothProgress, [0, 0.8], ["0%", "-66.666%"]);
 
             return (
@@ -799,12 +804,14 @@
                             <h2 className="text-[30vw] font-black uppercase tracking-tighter select-none">ENERGY</h2>
                         </div>
                         
+                        {/* GPU ACCELERATED WRAPPER */}
                         <motion.div style={{ x }} className="flex w-[300vw] h-full items-center gpu-accelerated">
                             
                             <div className="w-[100vw] h-full flex flex-col justify-center px-10 md:px-24 relative z-10">
                                 <h3 className="text-accent text-xs md:text-sm tracking-widest font-mono mb-4 uppercase">Kapitel 01</h3>
                                 <h2 className="text-5xl md:text-[6vw] font-black uppercase mb-8 leading-[0.85] tracking-tighter">Mehr als<br/>eine Party.</h2>
                                 <div className="relative w-[85vw] md:w-[60vw] aspect-[16/9] md:aspect-[21/9] overflow-hidden group">
+                                    {/* KEIN will-change-transform MEHR AUF DEN BILDERN (Verhindert RAM-Absturz auf Handys) */}
                                     <img src="6.jpg" className="w-full h-full object-cover grayscale md:opacity-60 md:group-hover:grayscale-0 md:group-hover:opacity-100 transition-all duration-700 md:group-hover:scale-105" alt="Story 1" />
                                 </div>
                             </div>
@@ -856,28 +863,10 @@
         };
 
         const Merch = ({ onLinkClick }) => {
-            const targetRef = useRef(null);
-            const isInView = useInView(targetRef, { amount: 0.3, once: false });
-
             return (
-                <section id="merch" ref={targetRef} className="pt-16 pb-32 md:pt-32 md:pb-48 relative z-20 px-4 bg-black flex justify-center overflow-visible perspective-container">
+                <section id="merch" className="pt-16 pb-32 md:pt-32 md:pb-48 relative z-20 px-4 bg-black flex justify-center overflow-visible">
                     
-                    {/* DAS "SLAM ON TABLE" FIX */}
-                    <motion.div 
-                        initial={{ y: -200, scale: 1.5, rotateZ: 15, rotateX: 20, opacity: 0 }}
-                        animate={isInView ? { 
-                            y: 0, 
-                            scale: 1, 
-                            rotateZ: -2, 
-                            rotateX: 0, 
-                            opacity: 1 
-                        } : { 
-                            y: -200, scale: 1.5, rotateZ: 15, rotateX: 20, opacity: 0 
-                        }}
-                        transition={{ type: "spring", stiffness: 150, damping: 12, delay: 0.1 }}
-                        className="w-full max-w-2xl text-black relative z-10 receipt-crumpled gpu-accelerated"
-                        style={{ transformOrigin: "center center" }}
-                    >
+                    <div className="w-full max-w-2xl text-black relative transition-all duration-500 z-10 receipt-crumpled gpu-accelerated">
                         
                         <div className="p-8 md:p-12 font-mono relative z-30">
                             <div className="text-center border-b-2 border-black/50 border-dashed pb-6 mb-6 relative ink-bleed">
@@ -911,7 +900,7 @@
                             </div>
                         </div>
                         <div className="receipt-edge absolute bottom-[-32px] left-0"></div>
-                    </motion.div>
+                    </div>
                 </section>
             );
         };
