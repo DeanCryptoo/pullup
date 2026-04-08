@@ -714,7 +714,6 @@
             );
         };
 
-        /* 2. AKTUELLES: "THE VAULT" */
         const News = () => {
             const targetRef = useRef(null);
             const isInView = useInView(targetRef, { amount: 0.7, once: false });
@@ -783,7 +782,6 @@
             );
         };
 
-        /* 3. STORY: "THE HORIZONTAL REEL" */
         const Story = () => {
             const targetRef = useRef(null);
             const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
@@ -857,21 +855,26 @@
 
         const Merch = ({ onLinkClick }) => {
             const targetRef = useRef(null);
-            const isInView = useInView(targetRef, { amount: 0.25, once: false });
+            const isInView = useInView(targetRef, { amount: 0.3, once: false });
 
             return (
-                <section id="merch" ref={targetRef} className="pt-16 pb-32 md:pt-32 md:pb-48 relative z-20 px-4 bg-black flex justify-center overflow-visible">
+                <section id="merch" ref={targetRef} className="pt-16 pb-32 md:pt-32 md:pb-48 relative z-20 px-4 bg-black flex justify-center overflow-visible perspective-container">
                     
+                    {/* DAS KNÖLLCHEN-UNFOLDING */}
                     <motion.div 
-                        initial={{ scale: 0.1, rotate: 120, rotateX: 80, opacity: 0 }}
-                        animate={{ 
-                            scale: isInView ? 1 : 0.1, 
-                            rotate: isInView ? -2 : 120, 
-                            rotateX: isInView ? 0 : 80, 
-                            skewX: isInView ? -2 : 0, 
-                            opacity: isInView ? 1 : 0 
+                        initial={{ scale: 0, rotateX: 160, rotateY: 120, rotateZ: -180, skewX: 40, skewY: 40, opacity: 0 }}
+                        animate={isInView ? { 
+                            scale: [0, 0.6, 1.05, 1], 
+                            rotateX: [160, -30, 10, 0], 
+                            rotateY: [120, 40, -10, 0], 
+                            rotateZ: [-180, 20, -5, -2], 
+                            skewX: [40, -15, 5, -2], 
+                            skewY: [40, -15, 5, 0],
+                            opacity: [0, 1, 1, 1] 
+                        } : { 
+                            scale: 0, rotateX: 160, rotateY: 120, rotateZ: -180, skewX: 40, skewY: 40, opacity: 0 
                         }}
-                        transition={{ type: "spring", stiffness: 70, damping: 12, delay: 0.1 }}
+                        transition={{ duration: 1.0, ease: [0.25, 1, 0.3, 1], times: [0, 0.5, 0.8, 1] }}
                         className="w-full max-w-2xl text-black relative z-10 receipt-crumpled gpu-accelerated"
                         style={{ transformOrigin: "center center" }}
                     >
