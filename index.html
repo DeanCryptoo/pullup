@@ -103,7 +103,6 @@
             height: 32px;
         }
 
-        /* Utility für vertikalen Text im Line-Up Accordion (nur Desktop) */
         .writing-vertical {
             writing-mode: vertical-rl;
             text-orientation: mixed;
@@ -454,10 +453,10 @@
         };
 
         /* ------------------------------------------------------------------------------------------------ */
-        /* --- KINETIC ACCORDION (LINE-UP) MIT RIESENRAD-KARUSSELL                                      --- */
+        /* --- KINETIC ACCORDION (LINE-UP) MIT RIESENRAD (DESKTOP) & BACKGROUND CROSSFADE (MOBILE)      --- */
         /* ------------------------------------------------------------------------------------------------ */
 
-        // Das neue Künstler-Karussell-Komponente (subtil im Hintergrund)
+        // DESKTOP: Riesenrad Karussell
         const ArtistCarousel = ({ artists, className }) => {
             const [index, setIndex] = useState(0);
 
@@ -472,16 +471,11 @@
             const nextIndex = (index + 1) % artists.length;
 
             const getSlotProps = (slotIndex) => {
-                // 100K FIX: Größere Bilder im Hintergrund, weniger Blur, damit man das Riesenrad klar erkennt
                 switch (slotIndex) {
-                    case 0: // LEFT
-                        return { x: "-20vw", y: "4vh", scale: 0.75, opacity: 0.5, zIndex: 5, filter: "blur(2px)" };
-                    case 1: // CENTER
-                        return { x: "0vw", y: "0vh", scale: 1, opacity: 0.8, zIndex: 10, filter: "blur(0px)" };
-                    case 2: // RIGHT
-                        return { x: "20vw", y: "4vh", scale: 0.75, opacity: 0.5, zIndex: 5, filter: "blur(2px)" };
-                    default:
-                        return {};
+                    case 0: return { x: "-20vw", y: "4vh", scale: 0.75, opacity: 0.5, zIndex: 5, filter: "blur(2px)" };
+                    case 1: return { x: "0vw", y: "0vh", scale: 1, opacity: 0.8, zIndex: 10, filter: "blur(0px)" };
+                    case 2: return { x: "20vw", y: "4vh", scale: 0.75, opacity: 0.5, zIndex: 5, filter: "blur(2px)" };
+                    default: return {};
                 }
             };
 
@@ -520,6 +514,62 @@
             );
         };
 
+        // MOBILE: Full Background Crossfade Carousel
+        const MobileBackgroundCarousel = ({ artists }) => {
+            const [index, setIndex] = useState(0);
+
+            useEffect(() => {
+                const timer = setInterval(() => {
+                    setIndex((prev) => (prev + 1) % artists.length);
+                }, 3000); 
+                return () => clearInterval(timer);
+            }, [artists.length]);
+
+            return (
+                <>
+                    {artists.map((artist, i) => (
+                        <motion.img
+                            key={i}
+                            src={artist.image}
+                            initial={false}
+                            animate={{ 
+                                opacity: i === index ? 0.5 : 0,
+                                scale: i === index ? 1 : 1.1,
+                                zIndex: i === index ? 1 : 0 
+                            }}
+                            transition={{ duration: 1.5, ease: "easeInOut" }}
+                            className="absolute inset-0 w-full h-full object-cover grayscale-0"
+                            alt={artist.name}
+                        />
+                    ))}
+                    
+                    {/* Dark gradient so the white text stays readable */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/20 z-10"></div>
+                    
+                    {/* Dynamischer Künstler-Name Badge */}
+                    <div className="absolute top-[40%] left-0 w-full flex justify-center z-20 pointer-events-none">
+                        {artists.map((artist, i) => (
+                            <motion.div
+                                key={`name-${i}`}
+                                initial={false}
+                                animate={{ 
+                                    opacity: i === index ? 1 : 0,
+                                    y: i === index ? 0 : 10,
+                                    zIndex: i === index ? 1 : 0 
+                                }}
+                                transition={{ duration: 0.5 }}
+                                className="absolute bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10"
+                            >
+                                <span className="text-accent font-bold uppercase tracking-widest text-xs shadow-black drop-shadow-md">
+                                    {artist.name}
+                                </span>
+                            </motion.div>
+                        ))}
+                    </div>
+                </>
+            );
+        };
+
         const Events = ({ onLinkClick }) => {
             const [activeEvent, setActiveEvent] = useState(EVENTS[0].id);
             const [isMobile, setIsMobile] = useState(false);
@@ -551,7 +601,7 @@
                         </div>
                     </div>
 
-                    {/* 100K MOBILE FIX: Container ändert sich von flex-row (Desktop) zu flex-col (Mobile) */}
+                    {/* Container ändert sich von flex-row (Desktop) zu flex-col (Mobile) */}
                     <div className="w-full h-[75vh] md:h-[70vh] flex flex-col md:flex-row px-2 md:px-4 gap-2 md:gap-2">
                         {sortedEvents.map((event) => {
                             const isActive = activeEvent === event.id;
@@ -580,13 +630,22 @@
                                     onClick={() => isMobile && setActiveEvent(event.id)}
                                     className={`relative rounded-2xl overflow-hidden cursor-none flex-shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive ? activeClass : inactiveClass}`}
                                 >
+                                    {/* BACKGROUND LOGIC */}
                                     <div className="absolute inset-0 z-0 bg-black">
-                                        <img 
-                                            src={event.image} 
-                                            className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-100 grayscale-0 opacity-40' : 'scale-150 grayscale opacity-20'}`} 
-                                            alt={event.city} 
-                                        />
-                                        <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/95 via-black/50 to-transparent' : 'bg-black/60'}`}></div>
+                                        {isActive && isMobile ? (
+                                            // MOBILE ACTIVE: Full Cover Crossfade
+                                            <MobileBackgroundCarousel artists={event.artists} />
+                                        ) : (
+                                            // DESKTOP or INACTIVE: Static Image
+                                            <>
+                                                <img 
+                                                    src={event.image} 
+                                                    className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-100 grayscale-0 opacity-40' : 'scale-150 grayscale opacity-20'}`} 
+                                                    alt={event.city} 
+                                                />
+                                                <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/95 via-black/50 to-transparent' : 'bg-black/60'}`}></div>
+                                            </>
+                                        )}
                                     </div>
 
                                     <AnimatePresence>
@@ -598,8 +657,8 @@
                                                 transition={{ duration: 0.3, delay: 0.2 }}
                                                 className="absolute inset-0 p-6 md:p-12 z-10 overflow-hidden"
                                             >
-                                                {/* Das Riesenrad-Künstler-Karussell (Position angepasst für Mobile) */}
-                                                <ArtistCarousel artists={event.artists} className="top-[15%] md:top-1/4" />
+                                                {/* DESKTOP ACTIVE: Riesenrad-Künstler-Karussell */}
+                                                {!isMobile && <ArtistCarousel artists={event.artists} className="top-[15%] md:top-1/4" />}
 
                                                 {/* Text und Buttons */}
                                                 <div className="relative z-20 flex flex-col justify-between h-full pointer-events-auto">
@@ -661,7 +720,6 @@
             const scrollVelocity = useVelocity(scrollY);
             const smoothVelocity = useSpring(scrollVelocity, { damping: 50, stiffness: 400 });
 
-            // 100K BUGFIX: AnimationFrame läuft jetzt global und filtert den Container, nicht das leere SVG
             useAnimationFrame(() => {
                 const vel = Math.abs(smoothVelocity.get());
                 const mappedScale = Math.min(vel * 0.05, 150); 
