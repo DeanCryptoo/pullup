@@ -899,13 +899,13 @@
                             </div>
                             <div className="text-center mt-12 relative ink-bleed">
                                 <p className="text-sm font-bold uppercase tracking-widest mb-6 relative z-10 text-black/80">*** DROP 01 IN PRODUKTION ***<br/>EXKLUSIV FÜR COMMUNITY MITGLIEDER</p>
-                                <MagneticButton onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.whatsapp, true); }} className="bg-[#1a1a1a] text-[#f0f0e6] w-full py-4 text-center cursor-none group relative overflow-hidden rounded-sm">
+                                <button onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.whatsapp, true); }} className="bg-[#1a1a1a] text-[#f0f0e6] w-full py-4 text-center cursor-none group relative overflow-hidden rounded-sm block">
                                     <div className="absolute inset-0 bg-accent transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
                                     <div className="flex justify-center items-center h-12 mb-2 px-4 opacity-50 group-hover:opacity-100 transition-opacity relative z-10 mix-blend-difference">
                                         {[...Array(30)].map((_, i) => (<div key={i} className="bg-white h-full" style={{ width: `${Math.random() * 4 + 1}px`, marginRight: `${Math.random() * 3 + 1}px` }}></div>))}
                                     </div>
                                     <span className="font-bold uppercase tracking-widest text-sm relative z-10 mix-blend-difference">ZUR WARTELISTE</span>
-                                </MagneticButton>
+                                </button>
                             </div>
                             <div className="text-center text-xs mt-8 opacity-60 relative ink-bleed">
                                 <p>KEINE RÜCKGABEN. KEIN RESTOCK.</p>
