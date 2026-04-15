@@ -621,119 +621,112 @@
 
                             const isClickable = !isPast && !isLocationOnly && displayStatus !== 'AUSVERKAUFT';
 
-                            // WICHTIG: Die aktive Karte nimmt nun flexibel den Platz ein (flex-1),
-                            // damit die Mobile-Elemente direkt darunter passen, ohne aus dem Container zu ragen.
-                            const activeClass = isMobile ? 'w-full flex-1 min-h-0' : 'w-[80%] h-full';
-                            const inactiveClass = isMobile ? 'w-full h-[7%] shrink-0' : 'w-[6%] h-full shrink-0';
+                            const activeClass = isMobile ? 'w-full h-[78%]' : 'w-[80%] h-full';
+                            const inactiveClass = isMobile ? 'w-full h-[7%]' : 'w-[6%] h-full';
 
-                            // Tags für das Endlos-Marquee
+                            // String am Punkt aufteilen für das mobile Tag-Layout
                             const lineupTags = event.lineup.split('•').map(item => item.trim());
+                            
+                            // Vervierfachen der Tags für einen perfekten Endlos-Loop
                             const loopedTags = [...lineupTags, ...lineupTags, ...lineupTags, ...lineupTags];
 
                             return (
-                                <React.Fragment key={event.id}>
-                                    <motion.div 
-                                        layout
-                                        onMouseEnter={() => !isMobile && setActiveEvent(event.id)}
-                                        onClick={() => isMobile && setActiveEvent(event.id)}
-                                        className={`relative rounded-2xl overflow-hidden cursor-none flex-shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive ? activeClass : inactiveClass} gpu-accelerated`}
-                                    >
-                                        <div className="absolute inset-0 z-0 bg-black">
-                                            <img 
-                                                src={isMobile ? event.image.mobile : event.image.desktop} 
-                                                className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-100 grayscale-0 opacity-30' : 'scale-150 grayscale opacity-20'}`} 
-                                                alt={event.city} 
-                                            />
-                                            <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/95 via-black/50 to-transparent' : 'bg-black/60'}`}></div>
-                                        </div>
+                                <motion.div 
+                                    key={event.id}
+                                    layout
+                                    onMouseEnter={() => !isMobile && setActiveEvent(event.id)}
+                                    onClick={() => isMobile && setActiveEvent(event.id)}
+                                    className={`relative rounded-2xl overflow-hidden cursor-none flex-shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive ? activeClass : inactiveClass} gpu-accelerated`}
+                                >
+                                    <div className="absolute inset-0 z-0 bg-black">
+                                        <img 
+                                            src={isMobile ? event.image.mobile : event.image.desktop} 
+                                            className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-100 grayscale-0 opacity-30' : 'scale-150 grayscale opacity-20'}`} 
+                                            alt={event.city} 
+                                        />
+                                        <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/95 via-black/50 to-transparent' : 'bg-black/60'}`}></div>
+                                    </div>
 
-                                        <AnimatePresence>
-                                            {isActive && (
-                                                <motion.div 
-                                                    initial={{ opacity: 0, y: 20 }} 
-                                                    animate={{ opacity: 1, y: 0 }} 
-                                                    exit={{ opacity: 0, y: 20 }}
-                                                    transition={{ duration: 0.3, delay: 0.2 }}
-                                                    className="absolute inset-0 p-5 md:p-12 z-10 flex flex-col justify-between overflow-hidden pointer-events-none gpu-accelerated"
-                                                >
-                                                    <div className="flex justify-between items-start relative z-20 pointer-events-auto">
-                                                        <span className="text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 tracking-tighter drop-shadow-2xl">
-                                                            {event.dateLabel}
-                                                        </span>
-                                                        {event.scarcity === 'low' && !isPast && !isLocationOnly && (
-                                                            <span className="bg-red-600 text-white px-2 py-1 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase animate-pulse">Low Stock</span>
-                                                        )}
-                                                    </div>
+                                    <AnimatePresence>
+                                        {isActive && (
+                                            <motion.div 
+                                                initial={{ opacity: 0, y: 20 }} 
+                                                animate={{ opacity: 1, y: 0 }} 
+                                                exit={{ opacity: 0, y: 20 }}
+                                                transition={{ duration: 0.3, delay: 0.2 }}
+                                                className="absolute inset-0 p-5 md:p-12 z-10 flex flex-col justify-between overflow-hidden pointer-events-none gpu-accelerated"
+                                            >
+                                                <div className="flex justify-between items-start relative z-20 pointer-events-auto">
+                                                    <span className="text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 tracking-tighter drop-shadow-2xl">
+                                                        {event.dateLabel}
+                                                    </span>
+                                                    {event.scarcity === 'low' && !isPast && !isLocationOnly && (
+                                                        <span className="bg-red-600 text-white px-2 py-1 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase animate-pulse">Low Stock</span>
+                                                    )}
+                                                </div>
 
-                                                    <ArtistCarousel artists={event.artists} isMobile={isMobile} className="top-[25%] md:top-[15%] bottom-[35%] md:bottom-1/4 pointer-events-auto" />
+                                                <ArtistCarousel artists={event.artists} isMobile={isMobile} className="top-[25%] md:top-[15%] bottom-[35%] md:bottom-1/4 pointer-events-auto" />
 
-                                                    <div className="relative z-20 flex flex-col w-full gap-3 md:gap-6 mt-auto pointer-events-auto">
-                                                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end w-full">
-                                                            <div className="flex flex-col w-full md:w-auto">
-                                                                <h3 className="text-4xl md:text-6xl font-black uppercase text-white tracking-tighter mb-0 md:mb-2 drop-shadow-lg">{event.city}</h3>
-                                                                <span className="text-accent uppercase tracking-widest text-xs md:text-base font-bold mb-2 md:mb-4 drop-shadow-md">{event.venue}</span>
-                                                                
-                                                                {/* DESKTOP: Normale Zeile */}
-                                                                <p className="font-mono text-[10px] md:text-lg text-white/80 max-w-lg bg-black/60 backdrop-blur-sm p-2 rounded-lg border border-white/10 hidden md:block">{event.lineup}</p>
-                                                            </div>
+                                                <div className="relative z-20 flex flex-col w-full gap-3 md:gap-6 mt-auto pointer-events-auto">
+                                                    
+                                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end w-full">
+                                                        <div className="flex flex-col w-full md:w-auto">
+                                                            <h3 className="text-4xl md:text-6xl font-black uppercase text-white tracking-tighter mb-0 md:mb-2 drop-shadow-lg">{event.city}</h3>
+                                                            <span className="text-accent uppercase tracking-widest text-xs md:text-base font-bold mb-2 md:mb-4 drop-shadow-md">{event.venue}</span>
                                                             
-                                                            {/* Desktop Buttons */}
-                                                            <div className="hidden md:flex items-center gap-2 md:gap-3 shrink-0">
-                                                                <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
-                                                                    <MapPin className="w-5 h-5 md:w-5 md:h-5" />
-                                                                </a>
-                                                                <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`px-4 md:px-10 py-4 md:py-4 rounded-full uppercase font-black tracking-widest text-[12px] md:text-sm transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-black/60 backdrop-blur-sm text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
-                                                                    {displayStatus}
-                                                                </a>
-                                                            </div>
+                                                            {/* DESKTOP: Normale Zeile */}
+                                                            <p className="font-mono text-[10px] md:text-lg text-white/80 max-w-lg bg-black/60 backdrop-blur-sm p-2 rounded-lg border border-white/10 hidden md:block">{event.lineup}</p>
+                                                        </div>
+                                                        
+                                                        {/* Desktop Buttons */}
+                                                        <div className="hidden md:flex items-center gap-2 md:gap-3 shrink-0">
+                                                            <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
+                                                                <MapPin className="w-5 h-5 md:w-5 md:h-5" />
+                                                            </a>
+                                                            <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`px-4 md:px-10 py-4 md:py-4 rounded-full uppercase font-black tracking-widest text-[12px] md:text-sm transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-black/60 backdrop-blur-sm text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
+                                                                {displayStatus}
+                                                            </a>
                                                         </div>
                                                     </div>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
 
-                                        <div className={`hidden md:flex absolute inset-0 items-center justify-center pointer-events-none transition-opacity duration-300 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
-                                            <span className="writing-vertical text-3xl font-black uppercase tracking-widest text-white/50 whitespace-nowrap">
-                                                {event.dateLabel}
-                                            </span>
-                                        </div>
+                                                    {/* MOBILE: Auto-looping Tag Row (Endlos-Marquee) */}
+                                                    <div className="md:hidden w-full overflow-hidden pb-1 -mx-2 px-2">
+                                                        <div className="flex w-max gpu-accelerated animate-tags-marquee pointer-events-none">
+                                                            {loopedTags.map((tag, index) => (
+                                                                <span key={index} className="font-mono text-[9px] text-white/90 bg-black/40 backdrop-blur-md px-2.5 py-1.5 rounded-sm border border-white/10 uppercase tracking-wider shadow-sm whitespace-nowrap shrink-0 mr-2">
+                                                                    {tag}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
 
-                                        <div className={`md:hidden absolute inset-0 flex items-center justify-center px-6 pointer-events-none transition-opacity duration-300 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
-                                            <span className="text-xl font-black uppercase tracking-widest text-white/70 whitespace-nowrap">
-                                                {event.dateLabel}
-                                            </span>
-                                        </div>
-                                    </motion.div>
+                                                    {/* MOBILE: Buttons Row (ganz unten) */}
+                                                    <div className="md:hidden flex items-center gap-2 w-full shrink-0">
+                                                        <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
+                                                            <MapPin className="w-5 h-5" />
+                                                        </a>
+                                                        <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`flex-1 py-4 rounded-full uppercase font-black tracking-widest text-[12px] transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-black/60 backdrop-blur-sm text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
+                                                            {displayStatus}
+                                                        </a>
+                                                    </div>
 
-                                    {/* NEUE PLATZIERUNG: Außerhalb der Karte, aber direkt als nächstes Element in der Liste */}
-                                    {isMobile && isActive && (
-                                        <motion.div 
-                                            layout 
-                                            initial={{ opacity: 0 }} 
-                                            animate={{ opacity: 1 }} 
-                                            transition={{ duration: 0.3, delay: 0.1 }}
-                                            className="flex flex-col gap-3 w-full shrink-0 relative z-20 my-1"
-                                        >
-                                            <div className="w-full overflow-hidden pb-1 -mx-2 px-2">
-                                                <div className="flex w-max gpu-accelerated animate-tags-marquee pointer-events-none">
-                                                    {loopedTags.map((tag, index) => (
-                                                        <span key={index} className="font-mono text-[9px] text-white/90 bg-black/40 backdrop-blur-md px-2.5 py-1.5 rounded-sm border border-white/10 uppercase tracking-wider shadow-sm whitespace-nowrap shrink-0 mr-2">
-                                                            {tag}
-                                                        </span>
-                                                    ))}
                                                 </div>
-                                            </div>
-                                            <div className="flex items-center gap-2 w-full shrink-0">
-                                                <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
-                                                    <MapPin className="w-5 h-5" />
-                                                </a>
-                                                <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`flex-1 py-3.5 rounded-full uppercase font-black tracking-widest text-[12px] transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-black/60 backdrop-blur-sm text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
-                                                    {displayStatus}
-                                                </a>
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </React.Fragment>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+
+                                    <div className={`hidden md:flex absolute inset-0 items-center justify-center pointer-events-none transition-opacity duration-300 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
+                                        <span className="writing-vertical text-3xl font-black uppercase tracking-widest text-white/50 whitespace-nowrap">
+                                            {event.dateLabel}
+                                        </span>
+                                    </div>
+
+                                    <div className={`md:hidden absolute inset-0 flex items-center justify-center px-6 pointer-events-none transition-opacity duration-300 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
+                                        <span className="text-xl font-black uppercase tracking-widest text-white/70 whitespace-nowrap">
+                                            {event.dateLabel}
+                                        </span>
+                                    </div>
+                                </motion.div>
                             );
                         })}
                     </div>
