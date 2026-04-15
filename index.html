@@ -883,6 +883,9 @@
         };
 
         const Merch = ({ onLinkClick }) => {
+            // Einmalige Berechnung der Barcode-Balken, damit sie beim Hover identisch bleiben und nicht neu geladen werden.
+            const barcodeBars = React.useMemo(() => [...Array(30)].map(() => ({ width: `${Math.random() * 4 + 1}px`, marginRight: `${Math.random() * 3 + 1}px` })), []);
+
             return (
                 <section id="merch" className="pt-16 pb-32 md:pt-32 md:pb-48 relative z-20 px-4 bg-black flex justify-center overflow-visible">
                     
@@ -906,11 +909,25 @@
                             </div>
                             <div className="text-center mt-12 relative ink-bleed">
                                 <p className="text-sm font-bold uppercase tracking-widest mb-6 relative z-10 text-black/80">*** DROP 01 IN PRODUKTION ***<br/>EXKLUSIV FÜR COMMUNITY MITGLIEDER</p>
-                                <button onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.whatsapp, true); }} className="bg-[#1a1a1a] hover:bg-accent text-[#f0f0e6] hover:text-black w-full py-4 text-center cursor-none group rounded-sm block transition-colors duration-300">
-                                    <div className="flex justify-center items-center h-12 mb-2 px-4 opacity-50 group-hover:opacity-100 transition-opacity">
-                                        {[...Array(30)].map((_, i) => (<div key={i} className="bg-current h-full" style={{ width: `${Math.random() * 4 + 1}px`, marginRight: `${Math.random() * 3 + 1}px` }}></div>))}
+                                
+                                <button onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.whatsapp, true); }} className="relative w-full bg-[#1a1a1a] cursor-none group overflow-hidden rounded-sm block gpu-accelerated">
+                                    
+                                    {/* DEFAULT STATE (Dictates the size) */}
+                                    <div className="relative w-full py-4 flex flex-col justify-center items-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full text-[#f0f0e6] will-change-transform">
+                                        <div className="flex justify-center items-center h-12 mb-2 px-4 opacity-50">
+                                            {barcodeBars.map((bar, i) => (<div key={i} className="bg-current h-full" style={{ width: bar.width, marginRight: bar.marginRight }}></div>))}
+                                        </div>
+                                        <span className="font-bold uppercase tracking-widest text-sm">ZUR WARTELISTE</span>
                                     </div>
-                                    <span className="font-bold uppercase tracking-widest text-sm">ZUR WARTELISTE</span>
+
+                                    {/* HOVER STATE (Slides in from bottom) */}
+                                    <div className="absolute inset-0 bg-accent text-black flex flex-col justify-center items-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] translate-y-full group-hover:translate-y-0 will-change-transform">
+                                        <div className="flex justify-center items-center h-12 mb-2 px-4 opacity-80">
+                                            {barcodeBars.map((bar, i) => (<div key={i} className="bg-current h-full" style={{ width: bar.width, marginRight: bar.marginRight }}></div>))}
+                                        </div>
+                                        <span className="font-bold uppercase tracking-widest text-sm">ZUR WARTELISTE</span>
+                                    </div>
+
                                 </button>
                             </div>
                             <div className="text-center text-xs mt-8 opacity-60 relative ink-bleed">
