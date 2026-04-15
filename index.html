@@ -177,14 +177,14 @@
                 venue: "B-Side Club",
                 isoDate: "2026-07-04T23:00:00",
                 lineup: "OPEN YARD • PULLUP SOUNDSYSTEM • SURPRISE ACT'S",
-                image: "1.jpg", 
+                image: { desktop: "1.jpg", mobile: "1_mobile.jpg" }, 
                 status: "TICKETS",
                 scarcity: "available",
                 artists: [
-                    { name: "STAY TUNED", image: "1.jpg" }, 
-                    { name: "EARLY BIRD TICKETS", image: "Tickets_Now_V2.webp" },
-                    { name: "STAY TUNED", image: "3.jpg" },
-                    { name: "SPECIAL ACT", image: "Tickets_Now_V2.webp" }
+                    { name: "STAY TUNED", image: { desktop: "1.jpg", mobile: "1_mobile.jpg" } }, 
+                    { name: "EARLY BIRD TICKETS", image: { desktop: "Tickets_Now_V2.webp", mobile: "Tickets_Now_V2_mobile.webp" } },
+                    { name: "STAY TUNED", image: { desktop: "3.jpg", mobile: "3_mobile.jpg" } },
+                    { name: "SPECIAL ACT", image: { desktop: "Tickets_Now_V2.webp", mobile: "Tickets_Now_V2_mobile.webp" } }
                 ]
             },
             {
@@ -194,14 +194,14 @@
                 venue: "B-Side Club",
                 isoDate: "2026-08-15T23:00:00",
                 lineup: "OPEN YARD • PULLUP SOUNDSYSTEM • SURPRISE ACT'S",
-                image: "2.jpg",
+                image: { desktop: "2.jpg", mobile: "2_mobile.jpg" },
                 status: "TICKETS",
                 scarcity: "normal",
                 onLocationOnly: true,
                 artists: [
-                    { name: "STAY TUNED", image: "2.jpg" },
-                    { name: "STAY TUNED", image: "3.jpg" },
-                    { name: "STAY TUNED", image: "4.jpg" }
+                    { name: "STAY TUNED", image: { desktop: "2.jpg", mobile: "2_mobile.jpg" } },
+                    { name: "STAY TUNED", image: { desktop: "3.jpg", mobile: "3_mobile.jpg" } },
+                    { name: "STAY TUNED", image: { desktop: "4.jpg", mobile: "4_mobile.jpg" } }
                 ]
             },
             {
@@ -211,13 +211,13 @@
                 venue: "B-Side Club",
                 isoDate: "2026-09-12T22:00:00",
                 lineup: "OPEN YARD • PULLUP SOUNDSYSTEM • SURPRISE ACT'S",
-                image: "3.jpg",
+                image: { desktop: "3.jpg", mobile: "3_mobile.jpg" },
                 status: "TICKETS",
                 scarcity: "available",
                 artists: [
-                    { name: "STAY TUNED", image: "3.jpg" },
-                    { name: "STAY TUNED", image: "4.jpg" },
-                    { name: "STAY TUNED.", image: "1.jpg" }
+                    { name: "STAY TUNED", image: { desktop: "3.jpg", mobile: "3_mobile.jpg" } },
+                    { name: "STAY TUNED", image: { desktop: "4.jpg", mobile: "4_mobile.jpg" } },
+                    { name: "STAY TUNED.", image: { desktop: "1.jpg", mobile: "1_mobile.jpg" } }
                 ]
             },
             {
@@ -227,16 +227,16 @@
                 venue: "B-Side Club",
                 isoDate: "2026-12-31T23:59:00",
                 lineup: "OPEN YARD • PULLUP SOUNDSYSTEM • SURPRISE ACT'S",
-                image: "4.jpg",
+                image: { desktop: "4.jpg", mobile: "4_mobile.jpg" },
                 status: "TICKETS",
                 scarcity: "soon",
                 onLocationOnly: true, 
                 isSecret: false,
                 hasCountdown: true,
                 artists: [
-                    { name: "STAY TUNED", image: "4.jpg" },
-                    { name: "STAY TUNED", image: "1.jpg" },
-                    { name: "STAY TUNED", image: "2.jpg" }
+                    { name: "STAY TUNED", image: { desktop: "4.jpg", mobile: "4_mobile.jpg" } },
+                    { name: "STAY TUNED", image: { desktop: "1.jpg", mobile: "1_mobile.jpg" } },
+                    { name: "STAY TUNED", image: { desktop: "2.jpg", mobile: "2_mobile.jpg" } }
                 ]
             }
         ];
@@ -546,7 +546,7 @@
                                 transition={{ type: "spring", stiffness: 90, damping: 20 }}
                                 style={{ transformOrigin: "bottom center" }} 
                             >
-                                <img src={artist.image} className={`w-full h-full object-cover ${position === 1 ? 'grayscale-0' : 'grayscale'} opacity-90`} alt={artist.name} />
+                                <img src={isMobile ? artist.image.mobile : artist.image.desktop} className={`w-full h-full object-cover ${position === 1 ? 'grayscale-0' : 'grayscale'} opacity-90`} alt={artist.name} />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
                                 {position === 1 && (
                                     <div className="absolute bottom-3 left-2 right-2 text-center">
@@ -606,7 +606,7 @@
                                 >
                                     <div className="absolute inset-0 z-0 bg-black">
                                         <img 
-                                            src={event.image} 
+                                            src={isMobile ? event.image.mobile : event.image.desktop} 
                                             className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-100 grayscale-0 opacity-30' : 'scale-150 grayscale opacity-20'}`} 
                                             alt={event.city} 
                                         />
