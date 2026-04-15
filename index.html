@@ -606,7 +606,6 @@
                         </div>
                     </div>
 
-                    {/* h-auto auf Mobile, damit der Einschub unten genug Platz hat, ohne das Layout zu brechen */}
                     <div className="w-full h-auto md:h-[70vh] flex flex-col md:flex-row px-2 md:px-4 gap-2 md:gap-2">
                         {EVENTS.map((event) => {
                             const isActive = activeEvent === event.id;
@@ -618,7 +617,6 @@
 
                             const isClickable = !isPast && !isLocationOnly && displayStatus !== 'AUSVERKAUFT';
 
-                            /* Mobile nutzt fixe vh statt %, damit die Karte bei h-auto des Parents nicht kollabiert. 66vh ist fast genau das alte 78% von 85vh. */
                             const activeClass = isMobile ? 'w-full h-[66vh]' : 'w-[80%] h-full';
                             const inactiveClass = isMobile ? 'w-full h-[7vh]' : 'w-[6%] h-full';
 
@@ -639,7 +637,8 @@
                                                 className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-100 grayscale-0 opacity-30' : 'scale-150 grayscale opacity-20'}`} 
                                                 alt={event.city} 
                                             />
-                                            <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/95 via-black/50 to-transparent' : 'bg-black/60'}`}></div>
+                                            {/* Gradient wurde unten deutlich abgemildert, da er nicht mehr als Text-Hintergrund gebraucht wird */}
+                                            <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/70 via-black/10 to-transparent' : 'bg-black/60'}`}></div>
                                         </div>
 
                                         <AnimatePresence>
@@ -665,15 +664,12 @@
                                                     <div className="relative z-20 flex flex-col w-full gap-3 md:gap-6 mt-auto pointer-events-auto">
                                                         <div className="flex flex-col md:flex-row justify-between items-start md:items-end w-full">
                                                             <div className="flex flex-col w-full md:w-auto">
-                                                                {/* Nur auf Desktop innerhalb der Karte sichtbar */}
                                                                 <h3 className="hidden md:block text-4xl md:text-6xl font-black uppercase text-white tracking-tighter mb-0 md:mb-2 drop-shadow-lg">{event.city}</h3>
                                                                 <span className="hidden md:block text-accent uppercase tracking-widest text-xs md:text-base font-bold mb-2 md:mb-4 drop-shadow-md">{event.venue}</span>
                                                                 
-                                                                {/* DESKTOP: Normale Zeile */}
                                                                 <p className="font-mono text-[10px] md:text-lg text-white/80 max-w-lg bg-black/60 backdrop-blur-sm p-2 rounded-lg border border-white/10 hidden md:block">{event.lineup}</p>
                                                             </div>
                                                             
-                                                            {/* Desktop Buttons */}
                                                             <div className="hidden md:flex items-center gap-2 md:gap-3 shrink-0">
                                                                 <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
                                                                     <MapPin className="w-5 h-5 md:w-5 md:h-5" />
@@ -701,18 +697,21 @@
                                         </div>
                                     </motion.div>
 
-                                    {/* EINSCHUB UNTER DER AKTIVEN KARTE (NUR MOBILE) */}
+                                    {/* EINSCHUB UNTER DER AKTIVEN KARTE (NUR MOBILE) 
+                                        - pt-0 und -mt-2 heben den Flex-Gap komplett auf 
+                                    */}
                                     <AnimatePresence>
                                         {isActive && isMobile && (
                                             <motion.div
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: 'auto', opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
-                                                className="w-full flex flex-col overflow-hidden shrink-0 z-10 md:hidden pt-2 pb-1"
+                                                className="w-full flex flex-col overflow-hidden shrink-0 z-20 md:hidden pt-0 pb-1 -mt-2"
                                             >
-                                                <div className="flex flex-col w-full mb-3 px-1">
-                                                    <h3 className="text-4xl font-black uppercase text-white tracking-tighter mb-0 drop-shadow-lg">{event.city}</h3>
-                                                    <span className="text-accent uppercase tracking-widest text-xs font-bold drop-shadow-md">{event.venue}</span>
+                                                <div className="flex flex-col w-full mb-3 px-1 mt-1">
+                                                    {/* leading-none entfernt die unsichtbare Höhe um den Text herum */}
+                                                    <h3 className="text-4xl font-black uppercase text-white tracking-tighter mb-0 leading-none drop-shadow-lg">{event.city}</h3>
+                                                    <span className="text-accent uppercase tracking-widest text-xs font-bold drop-shadow-md mt-1">{event.venue}</span>
                                                 </div>
 
                                                 <div className="w-full overflow-hidden pb-1 -mx-1 px-1 mb-3">
