@@ -607,6 +607,9 @@
                             const activeClass = isMobile ? 'w-full h-[78%]' : 'w-[80%] h-full';
                             const inactiveClass = isMobile ? 'w-full h-[7%]' : 'w-[6%] h-full';
 
+                            // NEU: Lineup String am Punkt aufteilen für das mobile Tag-Layout
+                            const lineupTags = event.lineup.split('•').map(item => item.trim());
+
                             return (
                                 <motion.div 
                                     key={event.id}
@@ -648,10 +651,21 @@
                                                     <div className="flex flex-col">
                                                         <h3 className="text-4xl md:text-6xl font-black uppercase text-white tracking-tighter mb-0 md:mb-2 drop-shadow-lg">{event.city}</h3>
                                                         <span className="text-accent uppercase tracking-widest text-xs md:text-base font-bold mb-2 md:mb-4 drop-shadow-md">{event.venue}</span>
+                                                        
+                                                        {/* DESKTOP: Normale Zeile */}
                                                         <p className="font-mono text-[10px] md:text-lg text-white/80 max-w-lg bg-black/60 backdrop-blur-sm p-2 rounded-lg border border-white/10 hidden md:block">{event.lineup}</p>
+                                                        
+                                                        {/* MOBILE: Neues Badge/Tag Layout */}
+                                                        <div className="md:hidden flex flex-wrap gap-2 mt-2">
+                                                            {lineupTags.map((tag, index) => (
+                                                                <span key={index} className="font-mono text-[9px] text-white/90 bg-white/10 backdrop-blur-md px-2.5 py-1 rounded-sm border border-white/5 uppercase tracking-wider shadow-sm">
+                                                                    {tag}
+                                                                </span>
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                     
-                                                    <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto mt-1 md:mt-0">
+                                                    <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto mt-4 md:mt-0">
                                                         <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
                                                             <MapPin className="w-5 h-5 md:w-5 md:h-5" />
                                                         </a>
@@ -921,6 +935,7 @@
                                     
                                     {/* DEFAULT STATE */}
                                     <div className="relative w-full py-4 flex flex-col justify-center items-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full text-[#f0f0e6] will-change-transform">
+                                        {/* WICHTIG: Filter wird direkt auf die Balken angewendet, damit NUR sie zerknittert sind. Da sie statisch sind, laggt es nicht. */}
                                         <div className="flex justify-center items-center h-12 mb-2 px-4 opacity-50" style={{ filter: 'url(#crumple-filter)' }}>
                                             {barcodeBars.map((bar, i) => (<div key={i} className="bg-current h-full" style={{ width: bar.width, marginRight: bar.marginRight }}></div>))}
                                         </div>
@@ -929,6 +944,7 @@
 
                                     {/* HOVER STATE (Slides in from bottom) */}
                                     <div className="absolute inset-0 bg-accent text-black flex flex-col justify-center items-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] translate-y-full group-hover:translate-y-0 will-change-transform">
+                                        {/* Zerknitterungs-Filter auch hier, für perfekte Konsistenz beim Sliding */}
                                         <div className="flex justify-center items-center h-12 mb-2 px-4 opacity-80" style={{ filter: 'url(#crumple-filter)' }}>
                                             {barcodeBars.map((bar, i) => (<div key={i} className="bg-current h-full" style={{ width: bar.width, marginRight: bar.marginRight }}></div>))}
                                         </div>
