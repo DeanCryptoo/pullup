@@ -524,9 +524,9 @@
             const getSlotProps = (slotIndex) => {
                 if (isMobile) {
                     switch (slotIndex) {
-                        case 0: return { x: "-28vw", y: "10px", scale: 0.8, opacity: 0.6, zIndex: 5 };
-                        case 1: return { x: "0vw", y: "0px", scale: 1, opacity: 1, zIndex: 10 };
-                        case 2: return { x: "28vw", y: "10px", scale: 0.8, opacity: 0.6, zIndex: 5 };
+                        case 0: return { x: "-45vw", y: "0vh", scale: 0.8, opacity: 0.6, zIndex: 5 };
+                        case 1: return { x: "0vw", y: "0vh", scale: 1, opacity: 1, zIndex: 10 };
+                        case 2: return { x: "45vw", y: "0vh", scale: 0.8, opacity: 0.6, zIndex: 5 };
                         default: return {};
                     }
                 } else {
@@ -563,7 +563,7 @@
                             ? getSlotProps(position) 
                             : { x: startX, y: "5vh", scale: 0.5, opacity: 0, zIndex: 0 };
 
-                        const cardSize = isMobile ? "w-[32vw] aspect-[4/5]" : "w-[22vw] aspect-[4/5]";
+                        const cardSize = isMobile ? "w-[55vw] aspect-[9/16]" : "w-[22vw] aspect-[4/5]";
 
                         return (
                             <motion.div
@@ -577,8 +577,8 @@
                                 <img src={isMobile ? artist.image.mobile : artist.image.desktop} className={`w-full h-full object-cover ${position === 1 ? 'grayscale-0' : 'grayscale'} opacity-90`} alt={artist.name} />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80 md:opacity-80"></div>
                                 {position === 1 && (
-                                    <div className="absolute bottom-2 md:bottom-3 left-2 right-2 text-center">
-                                        <p className="text-white text-[10px] md:text-sm font-bold uppercase tracking-widest leading-tight drop-shadow-md md:drop-shadow-none">{artist.name}</p>
+                                    <div className="absolute top-2 md:top-auto bottom-auto md:bottom-3 left-2 right-2 text-center">
+                                        <p className="text-white text-[10px] md:text-sm font-bold uppercase tracking-widest leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:drop-shadow-none">{artist.name}</p>
                                     </div>
                                 )}
                             </motion.div>
@@ -665,17 +665,14 @@
                                                     )}
                                                 </div>
 
-                                                {/* DESKTOP CAROUSEL */}
-                                                {!isMobile && (
-                                                    <ArtistCarousel artists={event.artists} isMobile={false} className="top-[15%] bottom-1/4 pointer-events-auto" />
-                                                )}
+                                                <ArtistCarousel artists={event.artists} isMobile={isMobile} className="top-[25%] md:top-[15%] bottom-[35%] md:bottom-1/4 pointer-events-auto" />
 
-                                                <div className="relative z-20 flex flex-col w-full gap-2 md:gap-6 mt-auto pointer-events-auto">
+                                                <div className="relative z-20 flex flex-col w-full gap-3 md:gap-6 mt-auto pointer-events-auto">
                                                     
                                                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end w-full">
                                                         <div className="flex flex-col w-full md:w-auto">
                                                             <h3 className="text-4xl md:text-6xl font-black uppercase text-white tracking-tighter mb-0 md:mb-2 drop-shadow-lg">{event.city}</h3>
-                                                            <span className="text-accent uppercase tracking-widest text-xs md:text-base font-bold mb-0 md:mb-4 drop-shadow-md">{event.venue}</span>
+                                                            <span className="text-accent uppercase tracking-widest text-xs md:text-base font-bold mb-2 md:mb-4 drop-shadow-md">{event.venue}</span>
                                                             
                                                             {/* DESKTOP: Normale Zeile */}
                                                             <p className="font-mono text-[10px] md:text-lg text-white/80 max-w-lg bg-black/60 backdrop-blur-sm p-2 rounded-lg border border-white/10 hidden md:block">{event.lineup}</p>
@@ -691,13 +688,6 @@
                                                             </a>
                                                         </div>
                                                     </div>
-
-                                                    {/* MOBILE CAROUSEL - Unter dem Bild/Stadt, über den Tags/Buttons */}
-                                                    {isMobile && (
-                                                        <div className="relative w-full h-[160px] flex items-center justify-center shrink-0 my-1">
-                                                            <ArtistCarousel artists={event.artists} isMobile={true} className="inset-0" />
-                                                        </div>
-                                                    )}
 
                                                     {/* MOBILE: Auto-looping Tag Row (Endlos-Marquee) */}
                                                     <div className="md:hidden w-full overflow-hidden pb-1 -mx-2 px-2">
