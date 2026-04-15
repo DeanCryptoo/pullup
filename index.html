@@ -85,6 +85,16 @@
             animation: spin-slow 8s linear infinite;
         }
 
+        /* NEU: CSS Animation für den Gallery Ticker (Verhindert JS-Scroll-Lag) */
+        @keyframes gallery-marquee {
+            0% { transform: translate3d(0%, 0, 0); }
+            100% { transform: translate3d(-25%, 0, 0); }
+        }
+        .animate-gallery-marquee {
+            animation: gallery-marquee 25s linear infinite;
+            will-change: transform;
+        }
+
         /* HARDCORE GPU ACCELERATION FÜR MOBILE */
         .gpu-accelerated {
             transform: translate3d(0, 0, 0);
@@ -181,9 +191,9 @@
                 status: "TICKETS",
                 scarcity: "available",
                 artists: [
-                    { name: "STAY TUNED", image: { desktop: "Tickets_Now_artist.webp", mobile: "Tickets_Now9_16_Artist.webp" } }, 
+                    { name: "STAY TUNED", image: { desktop: "TicketsNowdesk.webp", mobile: "Tickets_Now916.webp" } }, 
                     { name: "EARLY BIRD TICKETS", image: { desktop: "Tickets_Now_V2.webp", mobile: "Tickets_Now9_16.webp" } },
-                    { name: "STAY TUNED", image: { desktop: "Tickets_Now_artist.webp", mobile: "Tickets_Now9_16_Artist.webp" } },
+                    { name: "STAY TUNED", image: { desktop: "TicketsNowdesk.webp", mobile: "Tickets_Now916.webp" } },
                     { name: "SPECIAL ACT", image: { desktop: "Tickets_Now_V2.webp", mobile: "Tickets_Now9_16.webp" } }
                 ]
             },
@@ -857,12 +867,8 @@
                         dragConstraints={{ left: -1000, right: 1000 }} // Begrenzung des manuellen Swipens
                         dragElastic={0.2}
                     >
-                        {/* INNERER CONTAINER: Kümmert sich um den flüssigen Infinite-Loop */}
-                        <motion.div 
-                            className="flex w-max gpu-accelerated" 
-                            animate={{ x: ["0%", "-25%"] }} // Exakt 1 Set weiter bewegen (da 4 Sets gesamt = 25%)
-                            transition={{ duration: 25, ease: "linear", repeat: Infinity }}
-                        >
+                        {/* INNERER CONTAINER: Kümmert sich um den flüssigen Infinite-Loop über reine CSS Animation (verhindert lag beim Scrollen) */}
+                        <div className="flex w-max gpu-accelerated animate-gallery-marquee">
                             {duplicatedImages.map((src, i) => (
                                 // 'mr-4' anstatt 'gap-4' am Parent, damit die Mathematik des Loops 100% perfekt aufgeht
                                 <div key={i} className="relative w-[300px] h-[350px] md:w-[400px] md:h-[500px] shrink-0 overflow-hidden rounded-md group cursor-none mr-4">
@@ -870,7 +876,7 @@
                                     <img src={src} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110" />
                                 </div>
                             ))}
-                        </motion.div>
+                        </div>
                     </motion.div>
                 </section>
             );
