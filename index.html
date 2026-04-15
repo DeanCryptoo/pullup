@@ -575,10 +575,10 @@
                                 style={{ transformOrigin: "bottom center" }} 
                             >
                                 <img src={isMobile ? artist.image.mobile : artist.image.desktop} className={`w-full h-full object-cover ${position === 1 ? 'grayscale-0' : 'grayscale'} opacity-90`} alt={artist.name} />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80 md:opacity-80"></div>
                                 {position === 1 && (
-                                    <div className="absolute bottom-3 left-2 right-2 text-center">
-                                        <p className="text-white text-[10px] md:text-sm font-bold uppercase tracking-widest leading-tight">{artist.name}</p>
+                                    <div className="absolute top-2 md:top-auto bottom-auto md:bottom-3 left-2 right-2 text-center">
+                                        <p className="text-white text-[10px] md:text-sm font-bold uppercase tracking-widest leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:drop-shadow-none">{artist.name}</p>
                                     </div>
                                 )}
                             </motion.div>
