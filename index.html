@@ -58,7 +58,6 @@
             background: var(--color-accent);
         }
 
-        /* Versteckt den Scrollbar in unserer neuen Swipe-Reihe */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -103,7 +102,6 @@
             will-change: transform;
         }
 
-        /* NEU: CSS Animation für die kleinen mobilen Tags im Loop */
         @keyframes tags-marquee {
             0% { transform: translate3d(0%, 0, 0); }
             100% { transform: translate3d(-25%, 0, 0); }
@@ -113,7 +111,6 @@
             will-change: transform;
         }
 
-        /* HARDCORE GPU ACCELERATION FÜR MOBILE */
         .gpu-accelerated {
             transform: translate3d(0, 0, 0);
             backface-visibility: hidden;
@@ -127,7 +124,6 @@
             backface-visibility: hidden;
         }
         
-        /* 100K EXTREM ZERKNITTERTER KASSENBON */
         .receipt-crumpled {
             background-color: #f0f0e6; 
             background-image: 
@@ -618,7 +614,8 @@
                             const isClickable = !isPast && !isLocationOnly && displayStatus !== 'AUSVERKAUFT';
 
                             const wrapperClass = isActive ? 'w-full h-auto md:h-full md:w-[80%]' : 'w-full h-[7vh] md:h-full md:w-[6%]';
-                            const cardClass = isActive ? 'w-full h-[66vh] md:h-full mb-0' : 'w-full h-full';
+                            /* KARTEN HÖHE AUF HANDY LEICHT REDUZIERT DAMIT DER INHALT BIS GANZ NACH UNTEN GEHT */
+                            const cardClass = isActive ? 'w-full h-[55vh] md:h-full mb-0' : 'w-full h-full';
 
                             const lineupTags = event.lineup.split('•').map(item => item.trim());
                             const loopedTags = [...lineupTags, ...lineupTags, ...lineupTags, ...lineupTags];
@@ -641,7 +638,8 @@
                                                 className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-100 grayscale-0 opacity-30' : 'scale-150 grayscale opacity-20'}`} 
                                                 alt={event.city} 
                                             />
-                                            <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/70 via-black/10 to-transparent' : 'bg-black/60'}`}></div>
+                                            {/* FARBVERLAUF UNTEN DEUTLICH REDUZIERT DAMIT ES KEINE LÜCKE MEHR SIMULIERT */}
+                                            <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/40 via-transparent to-transparent' : 'bg-black/60'}`}></div>
                                         </div>
 
                                         <AnimatePresence>
@@ -662,7 +660,8 @@
                                                         )}
                                                     </div>
 
-                                                    <ArtistCarousel artists={event.artists} isMobile={isMobile} className="top-[25%] md:top-[15%] bottom-[35%] md:bottom-1/4 pointer-events-auto" />
+                                                    {/* KARUSSELL JETZT GANZ AM UNTEREN RAND DER KARTE (bottom-4) */}
+                                                    <ArtistCarousel artists={event.artists} isMobile={isMobile} className="top-auto bottom-4 md:top-[15%] md:bottom-1/4 pointer-events-auto" />
 
                                                     <div className="relative z-20 flex flex-col w-full gap-3 md:gap-6 mt-auto pointer-events-auto">
                                                         <div className="flex flex-col md:flex-row justify-between items-start md:items-end w-full">
@@ -700,20 +699,21 @@
                                         </div>
                                     </motion.div>
 
-                                    {/* HIER DER ABSOLUT FINALE FIX: Keine negativen Margins, keine kollidierenden Height-Animationen! Einfach nur pure Block-Struktur, die direkt darunter andockt. */}
+                                    {/* EINSCHUB UNTER DER AKTIVEN KARTE: KEINE HACKS MEHR, NUR SAUBERES LAYOUT */}
                                     <AnimatePresence>
                                         {isActive && isMobile && (
                                             <motion.div
+                                                layout
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
                                                 exit={{ opacity: 0 }}
-                                                className="w-full flex flex-col shrink-0 md:hidden mt-1 px-1"
+                                                className="w-full flex flex-col shrink-0 md:hidden mt-3 px-1"
                                             >
                                                 <div className="flex flex-col w-full mb-3">
-                                                    <h3 className="text-[12vw] font-black uppercase text-white tracking-tighter m-0 p-0 leading-[0.85] drop-shadow-lg">
+                                                    <h3 className="text-5xl font-black uppercase text-white tracking-tighter m-0 p-0 leading-none drop-shadow-lg">
                                                         {event.city}
                                                     </h3>
-                                                    <span className="text-accent uppercase tracking-widest text-[10px] font-bold drop-shadow-md mt-1 leading-none">
+                                                    <span className="text-accent uppercase tracking-widest text-[11px] font-bold drop-shadow-md mt-1 leading-none">
                                                         {event.venue}
                                                     </span>
                                                 </div>
