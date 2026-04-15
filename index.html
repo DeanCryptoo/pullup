@@ -103,6 +103,7 @@
             will-change: transform;
         }
 
+        /* NEU: CSS Animation für die kleinen mobilen Tags im Loop */
         @keyframes tags-marquee {
             0% { transform: translate3d(0%, 0, 0); }
             100% { transform: translate3d(-25%, 0, 0); }
@@ -616,9 +617,8 @@
 
                             const isClickable = !isPast && !isLocationOnly && displayStatus !== 'AUSVERKAUFT';
 
-                            // NEUER WRAPPER-ANSATZ FÜR 0 GAP
                             const wrapperClass = isActive ? 'w-full h-auto md:h-full md:w-[80%]' : 'w-full h-[7vh] md:h-full md:w-[6%]';
-                            const cardClass = isActive ? 'w-full h-[66vh] md:h-full' : 'w-full h-full';
+                            const cardClass = isActive ? 'w-full h-[66vh] md:h-full mb-0' : 'w-full h-full';
 
                             const lineupTags = event.lineup.split('•').map(item => item.trim());
                             const loopedTags = [...lineupTags, ...lineupTags, ...lineupTags, ...lineupTags];
@@ -700,17 +700,23 @@
                                         </div>
                                     </motion.div>
 
+                                    {/* EINSCHUB UNTER DER AKTIVEN KARTE (NUR MOBILE) */}
                                     <AnimatePresence>
                                         {isActive && isMobile && (
                                             <motion.div
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: 'auto', opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
-                                                className="w-full flex flex-col overflow-hidden shrink-0 z-20 md:hidden pt-2"
+                                                className="w-full flex flex-col overflow-hidden shrink-0 z-20 md:hidden"
+                                                style={{ marginTop: '-8px', paddingTop: '8px' }}
                                             >
                                                 <div className="flex flex-col w-full mb-3 px-1">
-                                                    <h3 className="text-4xl font-black uppercase text-white tracking-tighter mb-0 leading-none drop-shadow-lg">{event.city}</h3>
-                                                    <span className="text-accent uppercase tracking-widest text-xs font-bold drop-shadow-md mt-1">{event.venue}</span>
+                                                    <h3 className="text-[11vw] font-black uppercase text-white tracking-tighter m-0 p-0" style={{ lineHeight: '0.75' }}>
+                                                        {event.city}
+                                                    </h3>
+                                                    <span className="text-accent uppercase tracking-widest text-[11px] font-bold drop-shadow-md mt-1 leading-none">
+                                                        {event.venue}
+                                                    </span>
                                                 </div>
 
                                                 <div className="w-full overflow-hidden pb-1 -mx-1 px-1 mb-3">
@@ -723,7 +729,7 @@
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center gap-2 w-full shrink-0 px-1">
+                                                <div className="flex items-center gap-2 w-full shrink-0 px-1 pb-1">
                                                     <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
                                                         <MapPin className="w-5 h-5" />
                                                     </a>
