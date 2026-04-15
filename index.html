@@ -103,6 +103,16 @@
             will-change: transform;
         }
 
+        /* NEU: CSS Animation für die kleinen mobilen Tags im Loop */
+        @keyframes tags-marquee {
+            0% { transform: translate3d(0%, 0, 0); }
+            100% { transform: translate3d(-25%, 0, 0); }
+        }
+        .animate-tags-marquee {
+            animation: tags-marquee 15s linear infinite;
+            will-change: transform;
+        }
+
         /* HARDCORE GPU ACCELERATION FÜR MOBILE */
         .gpu-accelerated {
             transform: translate3d(0, 0, 0);
@@ -614,8 +624,11 @@
                             const activeClass = isMobile ? 'w-full h-[78%]' : 'w-[80%] h-full';
                             const inactiveClass = isMobile ? 'w-full h-[7%]' : 'w-[6%] h-full';
 
-                            // NEU: Lineup String am Punkt aufteilen für das mobile Tag-Layout
+                            // String am Punkt aufteilen für das mobile Tag-Layout
                             const lineupTags = event.lineup.split('•').map(item => item.trim());
+                            
+                            // Vervierfachen der Tags für einen perfekten Endlos-Loop
+                            const loopedTags = [...lineupTags, ...lineupTags, ...lineupTags, ...lineupTags];
 
                             return (
                                 <motion.div 
@@ -665,7 +678,7 @@
                                                             <p className="font-mono text-[10px] md:text-lg text-white/80 max-w-lg bg-black/60 backdrop-blur-sm p-2 rounded-lg border border-white/10 hidden md:block">{event.lineup}</p>
                                                         </div>
                                                         
-                                                        {/* Desktop Buttons -> Gehören neben den Text auf Desktop */}
+                                                        {/* Desktop Buttons */}
                                                         <div className="hidden md:flex items-center gap-2 md:gap-3 shrink-0">
                                                             <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
                                                                 <MapPin className="w-5 h-5 md:w-5 md:h-5" />
@@ -676,13 +689,15 @@
                                                         </div>
                                                     </div>
 
-                                                    {/* MOBILE: Swipable Tag Row (zwischendrin) */}
-                                                    <div className="md:hidden flex w-full gap-2 overflow-x-auto no-scrollbar snap-x shrink-0 pb-1">
-                                                        {lineupTags.map((tag, index) => (
-                                                            <span key={index} className="font-mono text-[9px] text-white/90 bg-black/40 backdrop-blur-md px-2.5 py-1.5 rounded-sm border border-white/10 uppercase tracking-wider shadow-sm whitespace-nowrap snap-start shrink-0">
-                                                                {tag}
-                                                            </span>
-                                                        ))}
+                                                    {/* MOBILE: Auto-looping Tag Row (Endlos-Marquee) */}
+                                                    <div className="md:hidden w-full overflow-hidden pb-1 -mx-2 px-2">
+                                                        <div className="flex w-max gpu-accelerated animate-tags-marquee pointer-events-none">
+                                                            {loopedTags.map((tag, index) => (
+                                                                <span key={index} className="font-mono text-[9px] text-white/90 bg-black/40 backdrop-blur-md px-2.5 py-1.5 rounded-sm border border-white/10 uppercase tracking-wider shadow-sm whitespace-nowrap shrink-0 mr-2">
+                                                                    {tag}
+                                                                </span>
+                                                            ))}
+                                                        </div>
                                                     </div>
 
                                                     {/* MOBILE: Buttons Row (ganz unten) */}
