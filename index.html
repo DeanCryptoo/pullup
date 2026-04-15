@@ -11,6 +11,7 @@
 
     <style>
         :root {
+            /* ORIGINALES PULLUP GELB & SCHWARZ */
             --color-accent: #d6d01f; 
             --color-black: #050505;
         }
@@ -57,6 +58,7 @@
             background: var(--color-accent);
         }
 
+        /* Versteckt den Scrollbar in unserer neuen Swipe-Reihe */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -101,6 +103,7 @@
             will-change: transform;
         }
 
+        /* NEU: CSS Animation für die kleinen mobilen Tags im Loop */
         @keyframes tags-marquee {
             0% { transform: translate3d(0%, 0, 0); }
             100% { transform: translate3d(-25%, 0, 0); }
@@ -110,6 +113,7 @@
             will-change: transform;
         }
 
+        /* HARDCORE GPU ACCELERATION FÜR MOBILE */
         .gpu-accelerated {
             transform: translate3d(0, 0, 0);
             backface-visibility: hidden;
@@ -123,6 +127,7 @@
             backface-visibility: hidden;
         }
         
+        /* 100K EXTREM ZERKNITTERTER KASSENBON */
         .receipt-crumpled {
             background-color: #f0f0e6; 
             background-image: 
@@ -392,7 +397,7 @@
                     <header className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[92%] max-w-6xl z-50 flex justify-between items-center bg-[#1a1a1a]/60 backdrop-blur-md border border-white/10 rounded-full px-4 md:px-8 py-3 md:py-4 pointer-events-auto shadow-2xl">
                         <a href="#" className="text-xl md:text-2xl font-black tracking-tighter uppercase font-sans hover:scale-105 transition-transform text-white cursor-none">Pullup</a>
                         <nav className="hidden lg:flex items-center gap-6 xl:gap-10">
-                            {[ { name: "Line-Up", id: "#events" }, { name: "Infos", id: "#aktuelles" }, { name: "Story", id: "#story" }, { name: "Merch", id: "#merch" } ].map((item) => (
+                            {[ { name: "Line-Up", id: "#events" }, { name: "Infos", id: "#infos" }, { name: "Aktuelles", id: "#aktuelles" }, { name: "Story", id: "#story" }, { name: "Merch", id: "#merch" } ].map((item) => (
                                 <a key={item.name} href={item.id} onClick={(e) => { e.preventDefault(); onLinkClick(item.id, false); }} className="text-white text-sm xl:text-base font-black uppercase tracking-widest hover:text-accent transition-colors cursor-none">{item.name}</a>
                             ))}
                         </nav>
@@ -695,19 +700,17 @@
                                         </div>
                                     </motion.div>
 
-                                    {/* EINSCHUB UNTER DER AKTIVEN KARTE (NUR MOBILE) */}
+                                    {/* HIER DER ABSOLUT FINALE FIX: Keine negativen Margins, keine kollidierenden Height-Animationen! Einfach nur pure Block-Struktur, die direkt darunter andockt. */}
                                     <AnimatePresence>
                                         {isActive && isMobile && (
                                             <motion.div
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: 'auto', opacity: 1 }}
-                                                exit={{ height: 0, opacity: 0 }}
-                                                /* HIER DER FIX: -mt-4 zieht es hoch, z-30 hält es im Vordergrund! */
-                                                className="w-full flex flex-col overflow-visible shrink-0 relative z-30 md:hidden -mt-4"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                className="w-full flex flex-col shrink-0 md:hidden mt-1 px-1"
                                             >
-                                                <div className="flex flex-col w-full mb-3 px-1">
-                                                    {/* leading-[0.75] drückt die unsichtbare Zeilenhöhe des Textes komplett zusammen */}
-                                                    <h3 className="text-5xl font-black uppercase text-white tracking-tighter m-0 p-0 drop-shadow-lg" style={{ lineHeight: '0.75' }}>
+                                                <div className="flex flex-col w-full mb-3">
+                                                    <h3 className="text-[12vw] font-black uppercase text-white tracking-tighter m-0 p-0 leading-[0.85] drop-shadow-lg">
                                                         {event.city}
                                                     </h3>
                                                     <span className="text-accent uppercase tracking-widest text-[10px] font-bold drop-shadow-md mt-1 leading-none">
@@ -725,7 +728,7 @@
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center gap-2 w-full shrink-0 px-1 pb-1">
+                                                <div className="flex items-center gap-2 w-full shrink-0">
                                                     <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
                                                         <MapPin className="w-5 h-5" />
                                                     </a>
