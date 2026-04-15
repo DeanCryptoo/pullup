@@ -492,6 +492,10 @@
             );
         };
 
+        /* ------------------------------------------------------------------------------------------------ */
+        /* --- KINETIC ACCORDION (LINE-UP) MIT DRAGGABLE RIESENRAD-KARUSSELL                            --- */
+        /* ------------------------------------------------------------------------------------------------ */
+
         const ArtistCarousel = ({ artists, className, isMobile }) => {
             const [index, setIndex] = useState(0);
             const [isDragging, setIsDragging] = useState(false);
@@ -606,7 +610,7 @@
                         </div>
                     </div>
 
-                    <div className="w-full h-auto md:h-[70vh] flex flex-col md:flex-row px-2 md:px-4 gap-2 md:gap-2">
+                    <div className="w-full h-[85vh] md:h-[70vh] flex flex-col md:flex-row px-2 md:px-4 gap-2 md:gap-2">
                         {EVENTS.map((event) => {
                             const isActive = activeEvent === event.id;
                             const isPast = new Date(event.isoDate) < new Date();
@@ -617,133 +621,111 @@
 
                             const isClickable = !isPast && !isLocationOnly && displayStatus !== 'AUSVERKAUFT';
 
-                            const wrapperClass = isActive ? 'w-full h-auto md:h-full md:w-[80%]' : 'w-full h-[7vh] md:h-full md:w-[6%]';
-                            /* WIEDERHERGESTELLT AUF 66vh: Keine gequetschte Karte mehr */
-                            const cardClass = isActive ? 'w-full h-[66vh] md:h-full mb-0' : 'w-full h-full';
+                            const activeClass = isMobile ? 'w-full h-[78%]' : 'w-[80%] h-full';
+                            const inactiveClass = isMobile ? 'w-full h-[7%]' : 'w-[6%] h-full';
 
+                            // String am Punkt aufteilen für das mobile Tag-Layout
                             const lineupTags = event.lineup.split('•').map(item => item.trim());
+                            
+                            // Vervierfachen der Tags für einen perfekten Endlos-Loop
                             const loopedTags = [...lineupTags, ...lineupTags, ...lineupTags, ...lineupTags];
 
                             return (
                                 <motion.div 
                                     key={event.id}
                                     layout
-                                    className={`flex flex-col shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${wrapperClass}`}
+                                    onMouseEnter={() => !isMobile && setActiveEvent(event.id)}
+                                    onClick={() => isMobile && setActiveEvent(event.id)}
+                                    className={`relative rounded-2xl overflow-hidden cursor-none flex-shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive ? activeClass : inactiveClass} gpu-accelerated`}
                                 >
-                                    <motion.div 
-                                        layout
-                                        onMouseEnter={() => !isMobile && setActiveEvent(event.id)}
-                                        onClick={() => isMobile && setActiveEvent(event.id)}
-                                        className={`relative z-10 rounded-2xl overflow-hidden cursor-none gpu-accelerated ${cardClass}`}
-                                    >
-                                        <div className="absolute inset-0 z-0 bg-black">
-                                            <img 
-                                                src={isMobile ? event.image.mobile : event.image.desktop} 
-                                                className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-100 grayscale-0 opacity-30' : 'scale-150 grayscale opacity-20'}`} 
-                                                alt={event.city} 
-                                            />
-                                            {/* FARBVERLAUF WIEDER ABGEMILDERT: Die Lücke im Bild bleibt unsichtbar */}
-                                            <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/40 via-transparent to-transparent' : 'bg-black/60'}`}></div>
-                                        </div>
+                                    <div className="absolute inset-0 z-0 bg-black">
+                                        <img 
+                                            src={isMobile ? event.image.mobile : event.image.desktop} 
+                                            className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-100 grayscale-0 opacity-30' : 'scale-150 grayscale opacity-20'}`} 
+                                            alt={event.city} 
+                                        />
+                                        <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/95 via-black/50 to-transparent' : 'bg-black/60'}`}></div>
+                                    </div>
 
-                                        <AnimatePresence>
-                                            {isActive && (
-                                                <motion.div 
-                                                    initial={{ opacity: 0, y: 20 }} 
-                                                    animate={{ opacity: 1, y: 0 }} 
-                                                    exit={{ opacity: 0, y: 20 }}
-                                                    transition={{ duration: 0.3, delay: 0.2 }}
-                                                    className="absolute inset-0 p-5 md:p-12 z-10 flex flex-col justify-between overflow-hidden pointer-events-none gpu-accelerated"
-                                                >
-                                                    <div className="flex justify-between items-start relative z-20 pointer-events-auto">
-                                                        <span className="text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 tracking-tighter drop-shadow-2xl">
-                                                            {event.dateLabel}
-                                                        </span>
-                                                        {event.scarcity === 'low' && !isPast && !isLocationOnly && (
-                                                            <span className="bg-red-600 text-white px-2 py-1 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase animate-pulse">Low Stock</span>
-                                                        )}
-                                                    </div>
+                                    <AnimatePresence>
+                                        {isActive && (
+                                            <motion.div 
+                                                initial={{ opacity: 0, y: 20 }} 
+                                                animate={{ opacity: 1, y: 0 }} 
+                                                exit={{ opacity: 0, y: 20 }}
+                                                transition={{ duration: 0.3, delay: 0.2 }}
+                                                className="absolute inset-0 p-5 md:p-12 z-10 flex flex-col justify-between overflow-hidden pointer-events-none gpu-accelerated"
+                                            >
+                                                <div className="flex justify-between items-start relative z-20 pointer-events-auto">
+                                                    <span className="text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 tracking-tighter drop-shadow-2xl">
+                                                        {event.dateLabel}
+                                                    </span>
+                                                    {event.scarcity === 'low' && !isPast && !isLocationOnly && (
+                                                        <span className="bg-red-600 text-white px-2 py-1 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase animate-pulse">Low Stock</span>
+                                                    )}
+                                                </div>
 
-                                                    {/* WIEDERHERGESTELLT AUF ORIGINALPOSITION: Das Karussell sitzt wieder perfekt mittig/oben! */}
-                                                    <ArtistCarousel artists={event.artists} isMobile={isMobile} className="top-[25%] md:top-[15%] bottom-[35%] md:bottom-1/4 pointer-events-auto" />
+                                                <ArtistCarousel artists={event.artists} isMobile={isMobile} className="top-[25%] md:top-[15%] bottom-[35%] md:bottom-1/4 pointer-events-auto" />
 
-                                                    <div className="relative z-20 flex flex-col w-full gap-3 md:gap-6 mt-auto pointer-events-auto">
-                                                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end w-full">
-                                                            <div className="flex flex-col w-full md:w-auto">
-                                                                <h3 className="hidden md:block text-4xl md:text-6xl font-black uppercase text-white tracking-tighter mb-0 md:mb-2 drop-shadow-lg">{event.city}</h3>
-                                                                <span className="hidden md:block text-accent uppercase tracking-widest text-xs md:text-base font-bold mb-2 md:mb-4 drop-shadow-md">{event.venue}</span>
-                                                                
-                                                                <p className="font-mono text-[10px] md:text-lg text-white/80 max-w-lg bg-black/60 backdrop-blur-sm p-2 rounded-lg border border-white/10 hidden md:block">{event.lineup}</p>
-                                                            </div>
+                                                <div className="relative z-20 flex flex-col w-full gap-3 md:gap-6 mt-auto pointer-events-auto">
+                                                    
+                                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end w-full">
+                                                        <div className="flex flex-col w-full md:w-auto">
+                                                            <h3 className="text-4xl md:text-6xl font-black uppercase text-white tracking-tighter mb-0 md:mb-2 drop-shadow-lg">{event.city}</h3>
+                                                            <span className="text-accent uppercase tracking-widest text-xs md:text-base font-bold mb-2 md:mb-4 drop-shadow-md">{event.venue}</span>
                                                             
-                                                            <div className="hidden md:flex items-center gap-2 md:gap-3 shrink-0">
-                                                                <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
-                                                                    <MapPin className="w-5 h-5 md:w-5 md:h-5" />
-                                                                </a>
-                                                                <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`px-4 md:px-10 py-4 md:py-4 rounded-full uppercase font-black tracking-widest text-[12px] md:text-sm transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-black/60 backdrop-blur-sm text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
-                                                                    {displayStatus}
-                                                                </a>
-                                                            </div>
+                                                            {/* DESKTOP: Normale Zeile */}
+                                                            <p className="font-mono text-[10px] md:text-lg text-white/80 max-w-lg bg-black/60 backdrop-blur-sm p-2 rounded-lg border border-white/10 hidden md:block">{event.lineup}</p>
+                                                        </div>
+                                                        
+                                                        {/* Desktop Buttons */}
+                                                        <div className="hidden md:flex items-center gap-2 md:gap-3 shrink-0">
+                                                            <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
+                                                                <MapPin className="w-5 h-5 md:w-5 md:h-5" />
+                                                            </a>
+                                                            <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`px-4 md:px-10 py-4 md:py-4 rounded-full uppercase font-black tracking-widest text-[12px] md:text-sm transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-black/60 backdrop-blur-sm text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
+                                                                {displayStatus}
+                                                            </a>
                                                         </div>
                                                     </div>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
 
-                                        <div className={`hidden md:flex absolute inset-0 items-center justify-center pointer-events-none transition-opacity duration-300 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
-                                            <span className="writing-vertical text-3xl font-black uppercase tracking-widest text-white/50 whitespace-nowrap">
-                                                {event.dateLabel}
-                                            </span>
-                                        </div>
-
-                                        <div className={`md:hidden absolute inset-0 flex items-center justify-center px-6 pointer-events-none transition-opacity duration-300 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
-                                            <span className="text-xl font-black uppercase tracking-widest text-white/70 whitespace-nowrap">
-                                                {event.dateLabel}
-                                            </span>
-                                        </div>
-                                    </motion.div>
-
-                                    {/* EINSCHUB UNTER DER AKTIVEN KARTE: KEINE HACKS MEHR, NUR SAUBERES LAYOUT MIT MINIMALEM ABSTAND */}
-                                    <AnimatePresence>
-                                        {isActive && isMobile && (
-                                            <motion.div
-                                                layout
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                                className="w-full flex flex-col shrink-0 md:hidden mt-2 px-1"
-                                            >
-                                                <div className="flex flex-col w-full mb-3">
-                                                    <h3 className="text-5xl font-black uppercase text-white tracking-tighter m-0 p-0 leading-[0.85] drop-shadow-lg">
-                                                        {event.city}
-                                                    </h3>
-                                                    <span className="text-accent uppercase tracking-widest text-[11px] font-bold drop-shadow-md mt-1 leading-none">
-                                                        {event.venue}
-                                                    </span>
-                                                </div>
-
-                                                <div className="w-full overflow-hidden pb-1 -mx-1 px-1 mb-3">
-                                                    <div className="flex w-max gpu-accelerated animate-tags-marquee pointer-events-none">
-                                                        {loopedTags.map((tag, index) => (
-                                                            <span key={index} className="font-mono text-[9px] text-white/90 bg-black/40 backdrop-blur-md px-2.5 py-1.5 rounded-sm border border-white/10 uppercase tracking-wider shadow-sm whitespace-nowrap shrink-0 mr-2">
-                                                                {tag}
-                                                            </span>
-                                                        ))}
+                                                    {/* MOBILE: Auto-looping Tag Row (Endlos-Marquee) */}
+                                                    <div className="md:hidden w-full overflow-hidden pb-1 -mx-2 px-2">
+                                                        <div className="flex w-max gpu-accelerated animate-tags-marquee pointer-events-none">
+                                                            {loopedTags.map((tag, index) => (
+                                                                <span key={index} className="font-mono text-[9px] text-white/90 bg-black/40 backdrop-blur-md px-2.5 py-1.5 rounded-sm border border-white/10 uppercase tracking-wider shadow-sm whitespace-nowrap shrink-0 mr-2">
+                                                                    {tag}
+                                                                </span>
+                                                            ))}
+                                                        </div>
                                                     </div>
-                                                </div>
 
-                                                <div className="flex items-center gap-2 w-full shrink-0">
-                                                    <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
-                                                        <MapPin className="w-5 h-5" />
-                                                    </a>
-                                                    <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`flex-1 py-4 rounded-full uppercase font-black tracking-widest text-[12px] transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-black/60 backdrop-blur-sm text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
-                                                        {displayStatus}
-                                                    </a>
+                                                    {/* MOBILE: Buttons Row (ganz unten) */}
+                                                    <div className="md:hidden flex items-center gap-2 w-full shrink-0">
+                                                        <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
+                                                            <MapPin className="w-5 h-5" />
+                                                        </a>
+                                                        <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`flex-1 py-4 rounded-full uppercase font-black tracking-widest text-[12px] transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-black/60 backdrop-blur-sm text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
+                                                            {displayStatus}
+                                                        </a>
+                                                    </div>
+
                                                 </div>
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
 
+                                    <div className={`hidden md:flex absolute inset-0 items-center justify-center pointer-events-none transition-opacity duration-300 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
+                                        <span className="writing-vertical text-3xl font-black uppercase tracking-widest text-white/50 whitespace-nowrap">
+                                            {event.dateLabel}
+                                        </span>
+                                    </div>
+
+                                    <div className={`md:hidden absolute inset-0 flex items-center justify-center px-6 pointer-events-none transition-opacity duration-300 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
+                                        <span className="text-xl font-black uppercase tracking-widest text-white/70 whitespace-nowrap">
+                                            {event.dateLabel}
+                                        </span>
+                                    </div>
                                 </motion.div>
                             );
                         })}
@@ -751,6 +733,7 @@
                 </section>
             );
         };
+        /* ------------------------------------------------------------------------------------------------ */
 
         const Infos = () => {
             const { scrollY } = useScroll();
@@ -791,6 +774,7 @@
             );
         };
 
+        /* 2. AKTUELLES: "THE VAULT" (100K PERFECT TIMING & GPU FIX) */
         const News = () => {
             const targetRef = useRef(null);
             const isInView = useInView(targetRef, { amount: 0.7, once: false });
@@ -859,11 +843,17 @@
             );
         };
 
+        /* 3. STORY: "THE HORIZONTAL REEL" (SMOOTH SPRING PHYSICS + SCROLL LOCK) */
         const Story = () => {
             const targetRef = useRef(null);
             const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
             
+            // 100K FIX: Der physikalische Stoßdämpfer ist zurück! 
+            // Er glättet das Scrollen des Daumens, damit es nicht mehr laggt.
             const smoothProgress = useSpring(scrollYProgress, { stiffness: 50, damping: 20, mass: 0.5 });
+            
+            // 100K FIX 2: Der "Scroll-Lock". Die Kamerafahrt stoppt bei 80% des Weges, 
+            // damit das 3. Bild kurz stehen bleibt.
             const x = useTransform(smoothProgress, [0, 0.8], ["0%", "-66.666%"]);
 
             return (
@@ -874,12 +864,14 @@
                             <h2 className="text-[30vw] font-black uppercase tracking-tighter select-none">ENERGY</h2>
                         </div>
                         
+                        {/* GPU ACCELERATED WRAPPER */}
                         <motion.div style={{ x }} className="flex w-[300vw] h-full items-center gpu-accelerated">
                             
                             <div className="w-[100vw] h-full flex flex-col justify-center px-10 md:px-24 relative z-10">
                                 <h3 className="text-accent text-xs md:text-sm tracking-widest font-mono mb-4 uppercase">Kapitel 01</h3>
                                 <h2 className="text-5xl md:text-[6vw] font-black uppercase mb-8 leading-[0.85] tracking-tighter">Mehr als<br/>eine Party.</h2>
                                 <div className="relative w-[85vw] md:w-[60vw] aspect-[16/9] md:aspect-[21/9] overflow-hidden group">
+                                    {/* KEIN will-change-transform MEHR AUF DEN BILDERN (Verhindert RAM-Absturz auf Handys) */}
                                     <img src="6.jpg" className="w-full h-full object-cover grayscale md:opacity-60 md:group-hover:grayscale-0 md:group-hover:opacity-100 transition-all duration-700 md:group-hover:scale-105" alt="Story 1" />
                                 </div>
                             </div>
@@ -910,6 +902,7 @@
 
         const GalleryTicker = () => {
             const images = [ "6.jpg", "7.jpg", "8.jpg", "1.jpg", "2.jpg" ];
+            // Wir verdoppeln die Bilder auf 4 Sets, um einen Puffer für das Swipen und den Loop zu haben.
             const duplicatedImages = [...images, ...images, ...images, ...images];
             
             return (
@@ -919,14 +912,17 @@
                          <span className="text-accent animate-pulse uppercase tracking-widest hidden md:block">Live aus dem Pit</span>
                     </div>
                     
+                    {/* ÄUSSERER CONTAINER: Kümmert sich nur um das Swipen (Drag) */}
                     <motion.div 
                         className="flex w-full cursor-grab active:cursor-grabbing"
                         drag="x"
-                        dragConstraints={{ left: -1000, right: 1000 }}
+                        dragConstraints={{ left: -1000, right: 1000 }} // Begrenzung des manuellen Swipens
                         dragElastic={0.2}
                     >
+                        {/* INNERER CONTAINER: Kümmert sich um den flüssigen Infinite-Loop über reine CSS Animation (verhindert lag beim Scrollen) */}
                         <div className="flex w-max gpu-accelerated animate-gallery-marquee">
                             {duplicatedImages.map((src, i) => (
+                                // 'mr-4' anstatt 'gap-4' am Parent, damit die Mathematik des Loops 100% perfekt aufgeht
                                 <div key={i} className="relative w-[300px] h-[350px] md:w-[400px] md:h-[500px] shrink-0 overflow-hidden rounded-md group cursor-none mr-4">
                                     <div className="absolute inset-0 bg-accent mix-blend-multiply opacity-0 group-hover:opacity-60 transition-opacity duration-300 z-10" />
                                     <img src={src} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110" />
@@ -939,14 +935,18 @@
         };
 
         const Merch = ({ onLinkClick }) => {
+            // Einmalige Berechnung der Barcode-Balken, damit sie beim Hover identisch bleiben und nicht neu geladen werden.
             const barcodeBars = React.useMemo(() => [...Array(30)].map(() => ({ width: `${Math.random() * 4 + 1}px`, marginRight: `${Math.random() * 3 + 1}px` })), []);
 
             return (
                 <section id="merch" className="pt-16 pb-32 md:pt-32 md:pb-48 relative z-20 px-4 bg-black flex justify-center overflow-visible">
                     
                     <div className="w-full max-w-2xl text-black relative transition-all duration-500 z-10 receipt-crumpled gpu-accelerated">
+                        
+                        {/* HIER WICHTIG: ink-bleed vom Parent entfernt! */}
                         <div className="p-8 md:p-12 font-mono relative z-30">
                             
+                            {/* ink-bleed zu den statischen Blöcken hinzugefügt */}
                             <div className="text-center border-b-2 border-black/50 border-dashed pb-6 mb-6 relative ink-bleed">
                                 <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-black/90">PULLUP KOLLEKTION</h2>
                                 <p className="text-sm md:text-base font-bold mt-2 text-black/80">SYS_ID: 884-992-A</p>
@@ -965,17 +965,23 @@
                             </div>
                             
                             <div className="text-center mt-12 relative">
+                                {/* ink-bleed auf den Text ÜBER dem Button */}
                                 <p className="text-sm font-bold uppercase tracking-widest mb-6 relative z-10 text-black/80 ink-bleed">*** DROP 01 IN PRODUKTION ***<br/>EXKLUSIV FÜR COMMUNITY MITGLIEDER</p>
                                 
                                 <button onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.whatsapp, true); }} className="relative w-full bg-[#1a1a1a] cursor-none group overflow-hidden rounded-sm block gpu-accelerated">
+                                    
+                                    {/* DEFAULT STATE */}
                                     <div className="relative w-full py-4 flex flex-col justify-center items-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full text-[#f0f0e6] will-change-transform">
+                                        {/* WICHTIG: Filter wird direkt auf die Balken angewendet, damit NUR sie zerknittert sind. Da sie statisch sind, laggt es nicht. */}
                                         <div className="flex justify-center items-center h-12 mb-2 px-4 opacity-50" style={{ filter: 'url(#crumple-filter)' }}>
                                             {barcodeBars.map((bar, i) => (<div key={i} className="bg-current h-full" style={{ width: bar.width, marginRight: bar.marginRight }}></div>))}
                                         </div>
                                         <span className="font-bold uppercase tracking-widest text-sm" style={{ filter: 'url(#crumple-filter)' }}>ZUR WARTELISTE</span>
                                     </div>
 
+                                    {/* HOVER STATE (Slides in from bottom) */}
                                     <div className="absolute inset-0 bg-accent text-black flex flex-col justify-center items-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] translate-y-full group-hover:translate-y-0 will-change-transform">
+                                        {/* Zerknitterungs-Filter auch hier, für perfekte Konsistenz beim Sliding */}
                                         <div className="flex justify-center items-center h-12 mb-2 px-4 opacity-80" style={{ filter: 'url(#crumple-filter)' }}>
                                             {barcodeBars.map((bar, i) => (<div key={i} className="bg-current h-full" style={{ width: bar.width, marginRight: bar.marginRight }}></div>))}
                                         </div>
