@@ -618,8 +618,8 @@
 
                             const isClickable = !isPast && !isLocationOnly && displayStatus !== 'AUSVERKAUFT';
 
-                            /* Mobile nutzt fixe vh statt %, damit die Karte bei h-auto des Parents nicht kollabiert. 66vh ist fast genau das alte 78% von 85vh. */
-                            const activeClass = isMobile ? 'w-full h-[66vh]' : 'w-[80%] h-full';
+                            /* Mobile nutzt 75vh damit alle inneren Elemente direkt unter dem Carousel gut Platz haben. */
+                            const activeClass = isMobile ? 'w-full h-[75vh]' : 'w-[80%] h-full';
                             const inactiveClass = isMobile ? 'w-full h-[7vh]' : 'w-[6%] h-full';
 
                             const lineupTags = event.lineup.split('•').map(item => item.trim());
@@ -671,6 +671,10 @@
                                                                 
                                                                 {/* DESKTOP: Normale Zeile */}
                                                                 <p className="font-mono text-[10px] md:text-lg text-white/80 max-w-lg bg-black/60 backdrop-blur-sm p-2 rounded-lg border border-white/10 hidden md:block">{event.lineup}</p>
+
+                                                                {/* MOBILE: Titel & Venue direkt unter dem Carousel in der Karte */}
+                                                                <h3 className="md:hidden text-4xl font-black uppercase text-white tracking-tighter mb-0 drop-shadow-lg">{event.city}</h3>
+                                                                <span className="md:hidden text-accent uppercase tracking-widest text-xs font-bold drop-shadow-md">{event.venue}</span>
                                                             </div>
                                                             
                                                             {/* Desktop Buttons */}
@@ -682,6 +686,26 @@
                                                                     {displayStatus}
                                                                 </a>
                                                             </div>
+                                                        </div>
+
+                                                        {/* Mobile Tags & Buttons (jetzt innerhalb der aktiven Karte) */}
+                                                        <div className="md:hidden w-full overflow-hidden pb-1 -mx-1 px-1 mt-1">
+                                                            <div className="flex w-max gpu-accelerated animate-tags-marquee pointer-events-none">
+                                                                {loopedTags.map((tag, index) => (
+                                                                    <span key={index} className="font-mono text-[9px] text-white/90 bg-black/40 backdrop-blur-md px-2.5 py-1.5 rounded-sm border border-white/10 uppercase tracking-wider shadow-sm whitespace-nowrap shrink-0 mr-2">
+                                                                        {tag}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="md:hidden flex items-center gap-2 w-full shrink-0 px-1 pb-1">
+                                                            <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
+                                                                <MapPin className="w-5 h-5" />
+                                                            </a>
+                                                            <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`flex-1 py-4 rounded-full uppercase font-black tracking-widest text-[12px] transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-black/60 backdrop-blur-sm text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
+                                                                {displayStatus}
+                                                            </a>
                                                         </div>
                                                     </div>
                                                 </motion.div>
@@ -700,43 +724,6 @@
                                             </span>
                                         </div>
                                     </motion.div>
-
-                                    {/* EINSCHUB UNTER DER AKTIVEN KARTE (NUR MOBILE) */}
-                                    <AnimatePresence>
-                                        {isActive && isMobile && (
-                                            <motion.div
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: 'auto', opacity: 1 }}
-                                                exit={{ height: 0, opacity: 0 }}
-                                                className="w-full flex flex-col overflow-hidden shrink-0 z-10 md:hidden pt-2 pb-1"
-                                            >
-                                                <div className="flex flex-col w-full mb-3 px-1">
-                                                    <h3 className="text-4xl font-black uppercase text-white tracking-tighter mb-0 drop-shadow-lg">{event.city}</h3>
-                                                    <span className="text-accent uppercase tracking-widest text-xs font-bold drop-shadow-md">{event.venue}</span>
-                                                </div>
-
-                                                <div className="w-full overflow-hidden pb-1 -mx-1 px-1 mb-3">
-                                                    <div className="flex w-max gpu-accelerated animate-tags-marquee pointer-events-none">
-                                                        {loopedTags.map((tag, index) => (
-                                                            <span key={index} className="font-mono text-[9px] text-white/90 bg-black/40 backdrop-blur-md px-2.5 py-1.5 rounded-sm border border-white/10 uppercase tracking-wider shadow-sm whitespace-nowrap shrink-0 mr-2">
-                                                                {tag}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-center gap-2 w-full shrink-0 px-1">
-                                                    <a href={MUESTER_MAP_URL} target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-sm hover:border-white hover:bg-white hover:text-black transition-all duration-300">
-                                                        <MapPin className="w-5 h-5" />
-                                                    </a>
-                                                    <a href={isClickable ? SOCIALS.linktree : undefined} onClick={(e) => { e.preventDefault(); if(isClickable) onLinkClick(SOCIALS.linktree, true); }} className={`flex-1 py-4 rounded-full uppercase font-black tracking-widest text-[12px] transition-all duration-300 text-center ${isPast || !isClickable ? 'bg-black/60 backdrop-blur-sm text-white/40 border border-white/20 cursor-not-allowed' : 'bg-accent text-black hover:scale-105 shadow-[0_0_20px_rgba(214,208,31,0.5)] cursor-none'}`}>
-                                                        {displayStatus}
-                                                    </a>
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-
                                 </React.Fragment>
                             );
                         })}
