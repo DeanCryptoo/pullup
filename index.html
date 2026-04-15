@@ -103,7 +103,6 @@
             will-change: transform;
         }
 
-        /* NEU: CSS Animation für die kleinen mobilen Tags im Loop */
         @keyframes tags-marquee {
             0% { transform: translate3d(0%, 0, 0); }
             100% { transform: translate3d(-25%, 0, 0); }
@@ -617,19 +616,24 @@
 
                             const isClickable = !isPast && !isLocationOnly && displayStatus !== 'AUSVERKAUFT';
 
-                            const activeClass = isMobile ? 'w-full h-[66vh]' : 'w-[80%] h-full';
-                            const inactiveClass = isMobile ? 'w-full h-[7vh]' : 'w-[6%] h-full';
+                            // NEUER WRAPPER-ANSATZ FÜR 0 GAP
+                            const wrapperClass = isActive ? 'w-full h-auto md:h-full md:w-[80%]' : 'w-full h-[7vh] md:h-full md:w-[6%]';
+                            const cardClass = isActive ? 'w-full h-[66vh] md:h-full' : 'w-full h-full';
 
                             const lineupTags = event.lineup.split('•').map(item => item.trim());
                             const loopedTags = [...lineupTags, ...lineupTags, ...lineupTags, ...lineupTags];
 
                             return (
-                                <React.Fragment key={event.id}>
+                                <motion.div 
+                                    key={event.id}
+                                    layout
+                                    className={`flex flex-col shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${wrapperClass}`}
+                                >
                                     <motion.div 
                                         layout
                                         onMouseEnter={() => !isMobile && setActiveEvent(event.id)}
                                         onClick={() => isMobile && setActiveEvent(event.id)}
-                                        className={`relative rounded-2xl overflow-hidden cursor-none flex-shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive ? activeClass : inactiveClass} gpu-accelerated`}
+                                        className={`relative rounded-2xl overflow-hidden cursor-none gpu-accelerated ${cardClass}`}
                                     >
                                         <div className="absolute inset-0 z-0 bg-black">
                                             <img 
@@ -637,7 +641,6 @@
                                                 className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-100 grayscale-0 opacity-30' : 'scale-150 grayscale opacity-20'}`} 
                                                 alt={event.city} 
                                             />
-                                            {/* Gradient wurde unten deutlich abgemildert, da er nicht mehr als Text-Hintergrund gebraucht wird */}
                                             <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black/70 via-black/10 to-transparent' : 'bg-black/60'}`}></div>
                                         </div>
 
@@ -697,19 +700,15 @@
                                         </div>
                                     </motion.div>
 
-                                    {/* EINSCHUB UNTER DER AKTIVEN KARTE (NUR MOBILE) 
-                                        - pt-0 und -mt-2 heben den Flex-Gap komplett auf 
-                                    */}
                                     <AnimatePresence>
                                         {isActive && isMobile && (
                                             <motion.div
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: 'auto', opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
-                                                className="w-full flex flex-col overflow-hidden shrink-0 z-20 md:hidden pt-0 pb-1 -mt-2"
+                                                className="w-full flex flex-col overflow-hidden shrink-0 z-20 md:hidden pt-2"
                                             >
-                                                <div className="flex flex-col w-full mb-3 px-1 mt-1">
-                                                    {/* leading-none entfernt die unsichtbare Höhe um den Text herum */}
+                                                <div className="flex flex-col w-full mb-3 px-1">
                                                     <h3 className="text-4xl font-black uppercase text-white tracking-tighter mb-0 leading-none drop-shadow-lg">{event.city}</h3>
                                                     <span className="text-accent uppercase tracking-widest text-xs font-bold drop-shadow-md mt-1">{event.venue}</span>
                                                 </div>
@@ -736,7 +735,7 @@
                                         )}
                                     </AnimatePresence>
 
-                                </React.Fragment>
+                                </motion.div>
                             );
                         })}
                     </div>
