@@ -122,7 +122,7 @@
                 inset -15px 0 25px rgba(0,0,0,0.06), 
                 inset 15px 0 25px rgba(0,0,0,0.06), 
                 0 30px 60px rgba(0,0,0,0.6);
-            filter: url(#crumple-filter) drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+            /* filter: url(#crumple-filter) entfernt, um Quittungs-Redraw-Lag zu verhindern */
             transform: rotate(-2deg) skewX(-2deg) translate3d(0,0,0);
         }
 
@@ -891,13 +891,13 @@
                     
                     <div className="w-full max-w-2xl text-black relative transition-all duration-500 z-10 receipt-crumpled gpu-accelerated">
                         
-                        <div className="p-8 md:p-12 font-mono relative z-30">
-                            <div className="text-center border-b-2 border-black/50 border-dashed pb-6 mb-6 relative ink-bleed">
+                        <div className="p-8 md:p-12 font-mono relative z-30 ink-bleed">
+                            <div className="text-center border-b-2 border-black/50 border-dashed pb-6 mb-6">
                                 <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-black/90">PULLUP KOLLEKTION</h2>
                                 <p className="text-sm md:text-base font-bold mt-2 text-black/80">SYS_ID: 884-992-A</p>
                                 <p className="text-xs mt-1 opacity-70">DATUM: {new Date().toLocaleDateString('de-DE')}</p>
                             </div>
-                            <div className="space-y-4 mb-8 ink-bleed">
+                            <div className="space-y-4 mb-8">
                                 <div className="flex justify-between items-end border-b border-black/20 pb-2">
                                     <div><p className="font-bold text-lg text-black/90">SCHWERER KAPUZENPULLI</p><p className="text-xs text-black/70">ARTIKELNR.: PLP-H01-BLK</p></div>
                                     <p className="font-bold text-black/90">GESPERRT</p>
@@ -912,20 +912,22 @@
                                 
                                 <button onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.whatsapp, true); }} className="relative w-full bg-[#1a1a1a] cursor-none group overflow-hidden rounded-sm block gpu-accelerated">
                                     
-                                    {/* DEFAULT STATE (Dictates the size) */}
+                                    {/* DEFAULT STATE */}
                                     <div className="relative w-full py-4 flex flex-col justify-center items-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full text-[#f0f0e6] will-change-transform">
-                                        <div className="flex justify-center items-center h-12 mb-2 px-4 opacity-50">
+                                        {/* WICHTIG: Filter wird direkt auf die Balken angewendet, damit NUR sie zerknittert sind. Da sie statisch sind, laggt es nicht. */}
+                                        <div className="flex justify-center items-center h-12 mb-2 px-4 opacity-50" style={{ filter: 'url(#crumple-filter)' }}>
                                             {barcodeBars.map((bar, i) => (<div key={i} className="bg-current h-full" style={{ width: bar.width, marginRight: bar.marginRight }}></div>))}
                                         </div>
-                                        <span className="font-bold uppercase tracking-widest text-sm">ZUR WARTELISTE</span>
+                                        <span className="font-bold uppercase tracking-widest text-sm" style={{ filter: 'url(#crumple-filter)' }}>ZUR WARTELISTE</span>
                                     </div>
 
                                     {/* HOVER STATE (Slides in from bottom) */}
                                     <div className="absolute inset-0 bg-accent text-black flex flex-col justify-center items-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] translate-y-full group-hover:translate-y-0 will-change-transform">
-                                        <div className="flex justify-center items-center h-12 mb-2 px-4 opacity-80">
+                                        {/* Zerknitterungs-Filter auch hier, für perfekte Konsistenz beim Sliding */}
+                                        <div className="flex justify-center items-center h-12 mb-2 px-4 opacity-80" style={{ filter: 'url(#crumple-filter)' }}>
                                             {barcodeBars.map((bar, i) => (<div key={i} className="bg-current h-full" style={{ width: bar.width, marginRight: bar.marginRight }}></div>))}
                                         </div>
-                                        <span className="font-bold uppercase tracking-widest text-sm">ZUR WARTELISTE</span>
+                                        <span className="font-bold uppercase tracking-widest text-sm" style={{ filter: 'url(#crumple-filter)' }}>ZUR WARTELISTE</span>
                                     </div>
 
                                 </button>
