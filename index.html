@@ -1024,6 +1024,8 @@
                                     <li><a href="#events" onClick={(e) => { e.preventDefault(); onLinkClick("#events", false); }} className="hover:text-white transition-colors cursor-none"><DecryptedText text="Events" animateOnHover={true} /></a></li>
                                     <li><a href={SOCIALS.instagram} onClick={(e) => { e.preventDefault(); onLinkClick(SOCIALS.instagram, true); }} className="hover:text-white transition-colors cursor-none"><DecryptedText text="Artists" animateOnHover={true} /></a></li>
                                     <li><a href="#gallery" onClick={(e) => { e.preventDefault(); onLinkClick("#gallery", false); }} className="hover:text-white transition-colors cursor-none"><DecryptedText text="Gallery" animateOnHover={true} /></a></li>
+                                    {/* NEU: Impressum Button in der Liste platziert */}
+                                    <li><button onClick={() => setShowImpressum(true)} className="hover:text-white transition-colors cursor-none text-left uppercase"><DecryptedText text="Impressum" animateOnHover={true} /></button></li>
                                 </ul>
                                 <div className="flex flex-col gap-4">
                                     <span className="text-sm font-bold opacity-60 uppercase tracking-wide">Connect</span>
@@ -1044,17 +1046,10 @@
                                 <img src="PoweredbyWestroomz.png" alt="Powered by Westroomz" className="h-16 md:h-32 w-auto object-contain mx-2 transition-opacity" />
                                 <span className="shrink-0">EST. 2019</span>
                             </div>
-                            
-                            {/* NEU: Impressum Button ganz unten */}
-                            <div className="text-center mt-8">
-                                <button onClick={() => setShowImpressum(true)} className="text-xs font-bold uppercase tracking-widest opacity-60 hover:opacity-100 hover:text-white transition-all cursor-pointer">
-                                    Impressum
-                                </button>
-                            </div>
                         </div>
                     </div>
 
-                    {/* NEU: Das Impressum Modal (Pop-up) */}
+                    {/* Das Impressum Modal (Pop-up) bleibt weiterhin erhalten */}
                     <AnimatePresence>
                         {showImpressum && (
                             <motion.div
